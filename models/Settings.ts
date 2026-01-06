@@ -1,4 +1,30 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
+
+export interface ISettings extends Document {
+    platformName: string;
+    supportEmail: string;
+    tagline: string;
+    maintenanceMode: boolean;
+    allowRegistrations: boolean;
+    minPasswordLength: number;
+    sessionTimeout: number;
+    requireSpecialChars: boolean;
+    admin2FA: boolean;
+    notifyNewUser: boolean;
+    notifyNewPitch: boolean;
+    monthlyReports: boolean;
+    smtpHost: string;
+    smtpPort: string;
+    smtpUser: string;
+    smtpPass: string;
+    forbiddenKeywords: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface ISettingsModel extends Model<ISettings> {
+    getSettings(): Promise<ISettings>;
+}
 
 const SettingsSchema = new mongoose.Schema({
     // General
@@ -36,6 +62,6 @@ SettingsSchema.statics.getSettings = async function () {
     return await this.create({});
 };
 
-const Settings = mongoose.models.Settings || mongoose.model('Settings', SettingsSchema);
+const Settings = (mongoose.models.Settings as ISettingsModel) || mongoose.model<ISettings, ISettingsModel>('Settings', SettingsSchema);
 
 export default Settings;
