@@ -152,7 +152,7 @@ export default function EntrepreneurSettings() {
             const result = await res.json();
             if (res.ok) {
                 alert('Profile updated successfully!');
-                setUser(prev => ({ ...prev, ...result.user })); // Update local state
+                setUser((prev: any) => ({ ...prev, ...result.user })); // Update local state
                 setProfileForm(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' }));
             } else {
                 alert(result.error || 'Failed to update profile');
