@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import DocumentUpdate from '@/models/DocumentUpdate';
 import Entrepreneur from '@/models/Entrepreneur';
+import Notification from '@/models/Notification';
 import { deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
 
@@ -59,6 +60,17 @@ export async function POST(
         // I'll delete the request record to keep DB clean as typical for "Inbox" style.
         await DocumentUpdate.findByIdAndDelete(id);
 
+        // Notify Entrepreneur
+        await Notification.create({
+            userId: user._id,
+            userRole: 'entrepreneur',
+            title: 'Document Verification Approved',
+            message: 'Your document verification request has been Approved.',
+            type: 'success',
+            link: '/entrepreneur_dashboard/settings',
+            isRead: false
+        });
+
         return NextResponse.json({ message: 'Request approved and profile updated.' });
 
     } else if (action === 'reject') {
@@ -69,6 +81,17 @@ export async function POST(
 
         request.status = 'rejected';
         await DocumentUpdate.findByIdAndDelete(id);
+
+        // Notify Entrepreneur
+        await Notification.create({
+            userId: user._id,
+            userRole: 'entrepreneur',
+            title: 'Document Verification Rejected',
+            message: 'Your document verification request has been Rejected.',
+            type: 'error',
+            link: '/entrepreneur_dashboard/settings',
+            isRead: false
+        });
 
         return NextResponse.json({ message: 'Request rejected and temporary files deleted.' });
     }

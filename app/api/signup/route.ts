@@ -5,6 +5,8 @@ import Investor from '@/models/Investor';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import bcrypt from 'bcryptjs';
 import Settings from '@/models/Settings';
+import Notification from '@/models/Notification';
+import Admin from '@/models/Admin';
 
 export async function POST(req: Request) {
     try {
@@ -103,6 +105,19 @@ export async function POST(req: Request) {
         } else {
             newUser = await Investor.create(userData);
         }
+
+        // Notify Admins
+        const admins = await Admin.find({});
+        const adminNotifications = admins.map(admin => ({
+            userId: admin._id,
+            userRole: 'admin',
+            title: 'New User Registered',
+            message: `New ${role} registered: ${userData.fullName || email}`, // fullName might be missing if not in formData explicitly? checking signup logic: fullName is usually part of it.
+            type: 'info',
+            link: '/admin/users',
+            isRead: false
+        }));
+        if (adminNotifications.length > 0) await Notification.insertMany(adminNotifications);
 
         return NextResponse.json({ message: 'Registration successful', userId: newUser._id });
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
+import Notification from '@/models/Notification';
 import { jwtVerify } from 'jose';
 
 async function verifyAdminAuth(req: Request) {
@@ -38,7 +39,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
         }
 
-        // Optional: Trigger Notification here (to be implemented later)
+        // Trigger Notification
+        await Notification.create({
+            userId: pitch.entrepreneur,
+            userRole: 'entrepreneur',
+            title: `Pitch ${status === 'approved' ? 'Approved' : 'Rejected'}`,
+            message: `Your pitch '${pitch.title}' has been ${status}.`,
+            type: status === 'approved' ? 'success' : 'error',
+            link: '/entrepreneur_dashboard/pitches',
+            isRead: false
+        });
 
         return NextResponse.json({ message: `Pitch ${status} successfully`, pitch });
 

@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import Entrepreneur from '@/models/Entrepreneur';
 import Investor from '@/models/Investor';
 import Pitch from '@/models/Pitch';
+import Notification from '@/models/Notification';
 import { deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
 
@@ -15,6 +16,71 @@ async function verifyAdmin(req: Request) {
         return payload.role === 'admin';
     } catch {
         return false;
+    }
+}
+
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        if (!await verifyAdmin(req)) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        await dbConnect();
+        const { id } = await params;
+        const body = await req.json();
+        const { status, rejectionReason } = body;
+
+        let user: any = await Entrepreneur.findById(id);
+        let role = 'entrepreneur';
+
+        if (!user) {
+            user = await Investor.findById(id);
+            role = 'investor';
+        }
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        // Update fields
+        if (status) user.status = status;
+        if (status === 'approved') user.isVerified = true;
+        if (status === 'rejected') user.isVerified = false;
+
+        await user.save();
+
+        // Send Notification
+        let title = 'Profile Update';
+        let message = 'Your profile has been updated by the admin.';
+        let type = 'info';
+
+        if (status === 'approved') {
+            title = 'Profile Approved';
+            message = 'Congratulations! Your profile has been verified and approved.';
+            type = 'success';
+        } else if (status === 'rejected') {
+            title = 'Profile Rejected';
+            message = `Your profile has been rejected. Reason: ${rejectionReason || 'Not specified'}`;
+            type = 'error';
+        }
+
+        await Notification.create({
+            userId: user._id,
+            userRole: role,
+            title,
+            message,
+            type,
+            isRead: false
+        });
+
+        return NextResponse.json({ message: 'User updated successfully', user });
+
+    } catch (error: any) {
+        console.error('Update User Error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
