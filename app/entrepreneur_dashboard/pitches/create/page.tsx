@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import StepWizard from '@/components/StepWizard'; // Will create this reusable wrapper locally to keep file clean or just inline it? 
-// Let's implement inline to handle the complex state easily in one file first.
+
 
 export default function CreatePitch() {
     const router = useRouter();
