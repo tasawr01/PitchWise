@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 export default function EmpoweringSuccess() {
     const [activeTab, setActiveTab] = useState('vision');
@@ -23,7 +23,7 @@ export default function EmpoweringSuccess() {
         },
     ];
 
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -33,7 +33,7 @@ export default function EmpoweringSuccess() {
         }
     };
 
-    const itemVariants = {
+    const itemVariants: Variants = {
         hidden: { opacity: 0, x: -20 },
         visible: {
             opacity: 1,

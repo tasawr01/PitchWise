@@ -150,7 +150,7 @@ interface FormData {
     phoneCountry: string;
     phone: string;
     password: string;
-    password: string;
+
     confirmPassword: string;
     role: Role;
 
