@@ -110,6 +110,15 @@ export async function POST(req: Request) {
 
 
 
+        // Notify Admins
+        const { notifyAdmins } = await import('@/lib/notification');
+        await notifyAdmins(
+            `New Document Update Request from ${(user as any).fullName}`,
+            'info',
+            newRequest._id,
+            'DocumentUpdate'
+        );
+
         return NextResponse.json({
             message: 'Document update requested submitted successfully',
             request: newRequest

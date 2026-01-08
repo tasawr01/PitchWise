@@ -275,12 +275,11 @@ export default function EntrepreneurSettings() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Settings</h2>
-
-            {/* Profile Header (Photo) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex items-center gap-6">
+            <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight mb-2">Platform Configuration</h2>
+            <p className="text-gray-500 mt-2 text-lg mb-8">Manage active system settings and moderation rules.</p>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 flex items-center gap-6">
                 <div className="relative group">
-                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 ring-4 ring-offset-2 ring-gray-50">
                         {user?.profilePhoto ? (
                             <img src={user.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
@@ -291,14 +290,14 @@ export default function EntrepreneurSettings() {
                     </div>
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full shadow hover:bg-blue-700"
+                        className="absolute bottom-0 right-0 bg-[#0B2C4A] text-white p-2 rounded-full shadow-lg hover:bg-[#09223a] transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
                     </button>
                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-gray-900">{user?.fullName}</h3>
+                    <h3 className="text-xl font-bold text-[#0B2C4A]">{user?.fullName}</h3>
                     <p className="text-gray-500 text-sm">{user?.email}</p>
                 </div>
             </div>
@@ -307,57 +306,57 @@ export default function EntrepreneurSettings() {
             <div className="flex gap-6 border-b border-gray-200">
                 <button
                     onClick={() => setActiveTab('profile')}
-                    className={`pb-3 px-1 font-medium ${activeTab === 'profile' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`pb-3 px-1 font-bold text-sm uppercase tracking-wide transition-colors ${activeTab === 'profile' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A]' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Profile Settings
                 </button>
                 <button
                     onClick={() => setActiveTab('documents')}
-                    className={`pb-3 px-1 font-medium ${activeTab === 'documents' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`pb-3 px-1 font-bold text-sm uppercase tracking-wide transition-colors ${activeTab === 'documents' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A]' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Identity Documents
                 </button>
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
                 {activeTab === 'profile' ? (
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                <input name="fullName" value={profileForm.fullName} onChange={handleProfileChange} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 border" />
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
+                                <input name="fullName" value={profileForm.fullName} onChange={handleProfileChange} className="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 border transition-colors" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                <input name="phone" value={profileForm.phone} onChange={handleProfileChange} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 border" />
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
+                                <input name="phone" value={profileForm.phone} onChange={handleProfileChange} className="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 border transition-colors" />
                             </div>
                         </div>
 
                         <hr className="border-gray-100" />
 
                         <div>
-                            <h4 className="font-semibold text-gray-800 mb-4">Change Password</h4>
+                            <h4 className="font-bold text-[#0B2C4A] mb-4">Change Password</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                                    <input type="password" name="newPassword" value={profileForm.newPassword} placeholder="Leave blank to keep current" onChange={handleProfileChange} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 border" />
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
+                                    <input type="password" name="newPassword" value={profileForm.newPassword} placeholder="Leave blank to keep current" onChange={handleProfileChange} className="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 border transition-colors" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                                    <input type="password" name="confirmPassword" value={profileForm.confirmPassword} onChange={handleProfileChange} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 border" />
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Confirm Password</label>
+                                    <input type="password" name="confirmPassword" value={profileForm.confirmPassword} onChange={handleProfileChange} className="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 border transition-colors" />
                                 </div>
                             </div>
                             {profileForm.newPassword && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Old Password (Required)</label>
-                                    <input type="password" name="oldPassword" value={profileForm.oldPassword} onChange={handleProfileChange} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 border" />
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Old Password (Required)</label>
+                                    <input type="password" name="oldPassword" value={profileForm.oldPassword} onChange={handleProfileChange} className="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 border transition-colors" />
                                 </div>
                             )}
                         </div>
 
                         <div className="flex justify-end pt-4">
-                            <button onClick={handleProfileSave} disabled={savingProfile} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50">
+                            <button onClick={handleProfileSave} disabled={savingProfile} className="bg-[#0B2C4A] text-white px-8 py-3 rounded-xl hover:bg-[#09223a] font-bold shadow-lg shadow-blue-900/20 disabled:opacity-50 transition-all">
                                 {savingProfile ? 'Saving...' : 'Save Changes'}
                             </button>
                         </div>
@@ -365,36 +364,36 @@ export default function EntrepreneurSettings() {
                 ) : (
                     <div className="space-y-6">
                         {/* Current Status */}
-                        <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                            <h4 className="font-semibold text-gray-800 mb-2">Current Verification Status</h4>
+                        <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 mb-6">
+                            <h4 className="font-bold text-[#0B2C4A] mb-4">Current Verification Status</h4>
                             <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div><span className="text-gray-600">Document Type:</span> <span className="font-medium capitalize">{user?.documentType || 'Not Set'}</span></div>
-                                <div><span className="text-gray-600">Verified:</span> <span className={`font-medium ${user?.isVerified ? 'text-green-600' : 'text-amber-600'}`}>{user?.isVerified ? 'Verified' : 'Unverified'}</span></div>
+                                <div><span className="text-gray-500 font-medium">Document Type:</span> <span className="font-bold text-gray-900 capitalize ml-2">{user?.documentType || 'Not Set'}</span></div>
+                                <div><span className="text-gray-500 font-medium">Verified:</span> <span className={`font-bold ml-2 ${user?.isVerified ? 'text-green-600' : 'text-amber-600'}`}>{user?.isVerified ? 'Verified' : 'Unverified'}</span></div>
                             </div>
                         </div>
 
                         {docStatus ? (
-                            <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg flex items-center justify-between">
+                            <div className="bg-blue-50/50 border border-blue-100 text-[#0B2C4A] p-6 rounded-xl flex items-center justify-between">
                                 <div>
-                                    <p className="font-semibold">Update Request Pending</p>
-                                    <p className="text-sm mt-1">You have a pending request to update your {docStatus.documentType.toUpperCase()}. Please wait for admin approval.</p>
+                                    <p className="font-bold">Update Request Pending</p>
+                                    <p className="text-sm mt-1 text-gray-600">You have a pending request to update your {docStatus.documentType.toUpperCase()}. Please wait for admin approval.</p>
                                 </div>
-                                <span className="bg-blue-200 text-blue-900 text-xs px-2 py-1 rounded font-bold uppercase tracking-wide">Pending</span>
+                                <span className="bg-[#0B2C4A] text-white text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide shadow-sm">Pending</span>
                             </div>
                         ) : (
                             <div className="space-y-6">
-                                <h4 className="font-semibold text-gray-800">Request Document Update</h4>
+                                <h4 className="font-bold text-[#0B2C4A]">Request Document Update</h4>
                                 <p className="text-sm text-gray-500">Updating these documents requires admin approval. Changes will not be live until approved.</p>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Document Type</label>
                                     <select
                                         value={docForm.documentType}
                                         onChange={(e) => {
                                             setDocForm({ ...docForm, documentType: e.target.value });
                                             setDocErrors({});
                                         }}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 border"
+                                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 border transition-colors bg-white"
                                     >
                                         <option value="cnic">CNIC (National ID)</option>
                                         <option value="passport">Passport</option>
@@ -404,7 +403,7 @@ export default function EntrepreneurSettings() {
                                 {docForm.documentType === 'cnic' ? (
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">CNIC Number</label>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">CNIC Number</label>
                                             <input
                                                 type="text"
                                                 value={docForm.cnicNumber}
@@ -419,45 +418,45 @@ export default function EntrepreneurSettings() {
                                                     if (docErrors.cnicNumber) setDocErrors({ ...docErrors, cnicNumber: '' });
                                                 }}
                                                 placeholder="e.g. 12345-1234567-1"
-                                                className={`w-full rounded-md border ${docErrors.cnicNumber ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5`}
+                                                className={`w-full rounded-lg border ${docErrors.cnicNumber ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 transition-colors`}
                                             />
-                                            {docErrors.cnicNumber && <p className="text-red-500 text-xs mt-1">{docErrors.cnicNumber}</p>}
+                                            {docErrors.cnicNumber && <p className="text-red-500 text-xs mt-1 font-medium">{docErrors.cnicNumber}</p>}
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">CNIC Front Image</label>
-                                                <input type="file" accept="image/*" onChange={(e) => handleDocFileChange('cnicFront', e)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                                                {docErrors.cnicFront && <p className="text-red-500 text-xs mt-1">{docErrors.cnicFront}</p>}
+                                                <label className="block text-sm font-bold text-gray-700 mb-2">CNIC Front Image</label>
+                                                <input type="file" accept="image/*" onChange={(e) => handleDocFileChange('cnicFront', e)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-[#0B2C4A]/10 file:text-[#0B2C4A] hover:file:bg-[#0B2C4A]/20 transition-colors cursor-pointer" />
+                                                {docErrors.cnicFront && <p className="text-red-500 text-xs mt-1 font-medium">{docErrors.cnicFront}</p>}
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">CNIC Back Image</label>
-                                                <input type="file" accept="image/*" onChange={(e) => handleDocFileChange('cnicBack', e)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                                                {docErrors.cnicBack && <p className="text-red-500 text-xs mt-1">{docErrors.cnicBack}</p>}
+                                                <label className="block text-sm font-bold text-gray-700 mb-2">CNIC Back Image</label>
+                                                <input type="file" accept="image/*" onChange={(e) => handleDocFileChange('cnicBack', e)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-[#0B2C4A]/10 file:text-[#0B2C4A] hover:file:bg-[#0B2C4A]/20 transition-colors cursor-pointer" />
+                                                {docErrors.cnicBack && <p className="text-red-500 text-xs mt-1 font-medium">{docErrors.cnicBack}</p>}
                                             </div>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Issuing Country</label>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Issuing Country</label>
                                             <select
                                                 value={docForm.issuingCountry}
                                                 onChange={(e) => {
                                                     setDocForm({ ...docForm, issuingCountry: e.target.value });
                                                     if (docErrors.issuingCountry) setDocErrors({ ...docErrors, issuingCountry: '' });
                                                 }}
-                                                className={`w-full rounded-md border ${docErrors.issuingCountry ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5`}
+                                                className={`w-full rounded-lg border ${docErrors.issuingCountry ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 transition-colors bg-white`}
                                             >
                                                 <option value="">Select Country</option>
                                                 {Object.entries(PASSPORT_FORMATS).map(([key, { label }]) => (
                                                     <option key={key} value={key}>{label}</option>
                                                 ))}
                                             </select>
-                                            {docErrors.issuingCountry && <p className="text-red-500 text-xs mt-1">{docErrors.issuingCountry}</p>}
+                                            {docErrors.issuingCountry && <p className="text-red-500 text-xs mt-1 font-medium">{docErrors.issuingCountry}</p>}
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Passport Number</label>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Passport Number</label>
                                             <input
                                                 type="text"
                                                 value={docForm.passportNumber}
@@ -466,13 +465,13 @@ export default function EntrepreneurSettings() {
                                                     if (docErrors.passportNumber) setDocErrors({ ...docErrors, passportNumber: '' });
                                                 }}
                                                 placeholder={docForm.issuingCountry ? PASSPORT_FORMATS[docForm.issuingCountry]?.placeholder : ''}
-                                                className={`w-full rounded-md border ${docErrors.passportNumber ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5`}
+                                                className={`w-full rounded-lg border ${docErrors.passportNumber ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 transition-colors`}
                                             />
-                                            {docErrors.passportNumber && <p className="text-red-500 text-xs mt-1">{docErrors.passportNumber}</p>}
+                                            {docErrors.passportNumber && <p className="text-red-500 text-xs mt-1 font-medium">{docErrors.passportNumber}</p>}
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Expiry Date</label>
                                             <input
                                                 type="date"
                                                 value={docForm.expiryDate}
@@ -480,21 +479,21 @@ export default function EntrepreneurSettings() {
                                                     setDocForm({ ...docForm, expiryDate: e.target.value });
                                                     if (docErrors.expiryDate) setDocErrors({ ...docErrors, expiryDate: '' });
                                                 }}
-                                                className={`w-full rounded-md border ${docErrors.expiryDate ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5`}
+                                                className={`w-full rounded-lg border ${docErrors.expiryDate ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] p-3 transition-colors`}
                                             />
-                                            {docErrors.expiryDate && <p className="text-red-500 text-xs mt-1">{docErrors.expiryDate}</p>}
+                                            {docErrors.expiryDate && <p className="text-red-500 text-xs mt-1 font-medium">{docErrors.expiryDate}</p>}
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Passport Scan</label>
-                                            <input type="file" accept="image/*" onChange={(e) => handleDocFileChange('passportScan', e)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                                            {docErrors.passportScan && <p className="text-red-500 text-xs mt-1">{docErrors.passportScan}</p>}
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Passport Scan</label>
+                                            <input type="file" accept="image/*" onChange={(e) => handleDocFileChange('passportScan', e)} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-[#0B2C4A]/10 file:text-[#0B2C4A] hover:file:bg-[#0B2C4A]/20 transition-colors cursor-pointer" />
+                                            {docErrors.passportScan && <p className="text-red-500 text-xs mt-1 font-medium">{docErrors.passportScan}</p>}
                                         </div>
                                     </div>
                                 )}
 
                                 <div className="flex justify-end pt-4">
-                                    <button onClick={handleDocRequest} disabled={savingDoc} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50">
+                                    <button onClick={handleDocRequest} disabled={savingDoc} className="bg-[#0B2C4A] text-white px-8 py-3 rounded-xl hover:bg-[#09223a] font-bold shadow-lg shadow-blue-900/20 disabled:opacity-50 transition-all">
                                         {savingDoc ? 'Submitting Request...' : 'Submit Update Request'}
                                     </button>
                                 </div>

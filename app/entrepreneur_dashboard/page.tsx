@@ -2,6 +2,8 @@ import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import LineChart from '@/components/charts/LineChart';
+import RecentActivity from '@/components/entrepreneur/RecentActivity';
 
 // Fetch specific stats
 async function getStats() {
@@ -33,84 +35,106 @@ export default async function EntrepreneurOverview() {
     const completedDeals = 1;
 
     return (
-        <div>
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-                <p className="text-gray-500">Welcome back! Here's what's happening with your startup.</p>
-            </div>
+        <div className="space-y-8">
+            <header className="mb-8">
+                <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">Dashboard Overview</h2>
+                <p className="text-gray-500 mt-2 text-lg">Welcome back! Here's what's happening with your startup.</p>
+            </header>
 
             {/* Stats Grid - Matching Admin Style */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <StatCard title="Total Pitches" value={pitchCount} sub="Live and Pending" color="blue" />
-                <StatCard title="Active Chats" value={activeChats} sub="Investor Interest" color="green" />
-                <StatCard title="Completed Deals" value={completedDeals} sub="Funding Secured" color="purple" />
-                <StatCard title="Total Views" value={views} sub="All Time Reach" color="orange" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                    title="Total Pitches"
+                    value={pitchCount}
+                    sub="Live and Pending"
+                    color="blue"
+                    icon={<svg className="w-6 h-6 text-[#0B2C4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>}
+                />
+                <StatCard
+                    title="Active Chats"
+                    value={activeChats}
+                    sub="Investor Interest"
+                    color="green"
+                    icon={<svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>}
+                />
+                <StatCard
+                    title="Completed Deals"
+                    value={completedDeals}
+                    sub="Funding Secured"
+                    color="purple"
+                    icon={<svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                />
+                <StatCard
+                    title="Total Views"
+                    value={views}
+                    sub="All Time Reach"
+                    color="orange"
+                    icon={<svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>}
+                />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Main Chart Area */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 className="font-bold text-gray-700 mb-4">Pitch Performance</h3>
-                    <div className="h-64 flex items-end justify-between px-4 space-x-2">
-                        {/* Dummy Bar Chart */}
-                        {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
-                            <div key={i} className="w-full bg-blue-50 rounded-t-md relative group">
-                                <div
-                                    className="absolute bottom-0 w-full bg-blue-500 rounded-t-md transition-all duration-500 hover:bg-blue-600"
-                                    style={{ height: `${height}%` }}
-                                ></div>
-                                <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded transition-opacity">
-                                    {height * 10} Views
-                                </div>
-                            </div>
-                        ))}
+                <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 h-[420px] transition-shadow hover:shadow-xl">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-bold text-[#0B2C4A]">Pitch Performance</h3>
+                            <p className="text-sm text-gray-500">Weekly view analytics</p>
+                        </div>
+                        <span className="bg-[#0B2C4A] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Weekly</span>
                     </div>
-                    <div className="flex justify-between mt-4 text-xs text-gray-400">
-                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                    <div className="h-full pb-10">
+                        {/* Dummy Data for Entrepreneur View */}
+                        <LineChart
+                            data={[
+                                { label: 'Mon', value: 40 },
+                                { label: 'Tue', value: 65 },
+                                { label: 'Wed', value: 45 },
+                                { label: 'Thu', value: 80 },
+                                { label: 'Fri', value: 55 },
+                                { label: 'Sat', value: 90 },
+                                { label: 'Sun', value: 70 },
+                            ]}
+                            color="#0B2C4A"
+                            height={280}
+                        />
                     </div>
                 </div>
 
                 {/* Recent Activity */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 className="font-bold text-gray-700 mb-4">Recent Activity</h3>
-                    <ul className="space-y-4">
-                        <ActivityItem text="Investor Alex viewed your 'AI Health' pitch" time="2h ago" />
-                        <ActivityItem text="New message from Sarah regarding 'GreenEnergy'" time="5h ago" />
-                        <ActivityItem text="Pitch 'TechEdu' was approved by Admin" time="1d ago" />
-                        <ActivityItem text="Profile updated successfully" time="2d ago" />
-                    </ul>
-                </div>
+                <RecentActivity />
             </div>
         </div>
     );
 }
 
 // Updated StatCard to match Admin dashboard style (Colored Left Border)
-function StatCard({ title, value, sub, color }: any) {
+function StatCard({ title, value, sub, color, icon }: any) {
     const colors: any = {
-        blue: 'border-l-4 border-blue-500',
-        green: 'border-l-4 border-green-500',
-        purple: 'border-l-4 border-purple-500',
-        orange: 'border-l-4 border-orange-500',
+        blue: 'bg-blue-50 border-l-4 border-blue-500 text-blue-700',
+        orange: 'bg-orange-50 border-l-4 border-orange-500 text-orange-700',
+        green: 'bg-green-50 border-l-4 border-green-500 text-green-700',
+        purple: 'bg-purple-50 border-l-4 border-purple-500 text-purple-700',
     };
 
     return (
-        <div className={`bg-white p-6 rounded-lg shadow-sm ${colors[color]}`}>
-            <p className="text-gray-500 text-sm font-medium uppercase">{title}</p>
-            <h3 className="text-3xl font-bold text-gray-800 my-1">{value}</h3>
-            <p className="text-xs text-gray-400">{sub}</p>
-        </div>
-    );
-}
-
-function ActivityItem({ text, time }: any) {
-    return (
-        <li className="flex items-start space-x-3 text-sm">
-            <div className="w-2 h-2 mt-1.5 rounded-full bg-blue-400 flex-shrink-0"></div>
-            <div>
-                <p className="text-gray-700">{text}</p>
-                <span className="text-gray-400 text-xs">{time}</span>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
+            <div className={`absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity`}>
+                <div className="transform scale-150 text-[#0B2C4A]">
+                    {icon}
+                </div>
             </div>
-        </li>
+
+            <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className={`p-2 rounded-lg ${colors[color].split(' ')[0]}`}>
+                        {icon}
+                    </div>
+                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">{title}</p>
+                </div>
+                <h3 className="text-3xl font-extrabold text-[#0B2C4A] my-1">{value}</h3>
+                <p className="text-xs text-gray-400 font-medium">{sub}</p>
+            </div>
+        </div>
     );
 }

@@ -222,48 +222,48 @@ export default function AdminUsers() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
+            <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">User Management</h2>
 
             {/* Tabs */}
             <div className="flex gap-4 border-b border-gray-200">
                 <button
                     onClick={() => setActiveTab('approved')}
-                    className={`pb-2 px-1 ${activeTab === 'approved' ? 'border-b-2 border-blue-600 text-blue-600 font-bold' : 'text-gray-500'}`}
+                    className={`pb-2 px-1 ${activeTab === 'approved' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     All Users
                 </button>
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`pb-2 px-1 ${activeTab === 'pending' ? 'border-b-2 border-blue-600 text-blue-600 font-bold' : 'text-gray-500'}`}
+                    className={`pb-2 px-1 ${activeTab === 'pending' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Pending Approval
                 </button>
                 <button
                     onClick={() => setActiveTab('doc-requests')}
-                    className={`pb-2 px-1 ${activeTab === 'doc-requests' ? 'border-b-2 border-blue-600 text-blue-600 font-bold' : 'text-gray-500'}`}
+                    className={`pb-2 px-1 ${activeTab === 'doc-requests' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Doc Update Requests
                 </button>
             </div>
 
             {loading ? <div className="p-8 text-center text-gray-500">Loading...</div> : (
-                <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                     {activeTab === 'doc-requests' ? (
                         <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-[#0B2C4A] text-white">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Documents</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">User</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Type</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Details</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Documents</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {docRequests.map((req) => (
-                                    <tr key={req._id}>
+                                    <tr key={req._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{req.entrepreneur?.fullName}</div>
+                                            <div className="text-sm font-bold text-[#0B2C4A]">{req.entrepreneur?.fullName}</div>
                                             <div className="text-sm text-gray-500">{req.entrepreneur?.email}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -274,50 +274,50 @@ export default function AdminUsers() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {req.documentType === 'cnic' ? `CNIC: ${req.cnicNumber}` : `Passport: ${req.passportNumber}`}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-[#0B2C4A]">
                                             <div className="flex gap-2">
                                                 {req.documentType === 'cnic' ? (
                                                     <>
-                                                        <a href={req.cnicFront} target="_blank" rel="noopener noreferrer" className="hover:underline">Front</a>
+                                                        <a href={req.cnicFront} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">Front</a>
                                                         <span className="text-gray-300">|</span>
-                                                        <a href={req.cnicBack} target="_blank" rel="noopener noreferrer" className="hover:underline">Back</a>
+                                                        <a href={req.cnicBack} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">Back</a>
                                                     </>
                                                 ) : (
-                                                    <a href={req.passportScan} target="_blank" rel="noopener noreferrer" className="hover:underline">Scan</a>
+                                                    <a href={req.passportScan} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">Scan</a>
                                                 )}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => handleDocAction(req._id, 'approved')} className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md">Approve</button>
-                                                <button onClick={() => handleDocAction(req._id, 'rejected')} className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md">Reject</button>
+                                                <button onClick={() => handleDocAction(req._id, 'approved')} className="text-green-700 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-md transition-colors">Approve</button>
+                                                <button onClick={() => handleDocAction(req._id, 'rejected')} className="text-red-700 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors">Reject</button>
                                             </div>
                                         </td>
                                     </tr>
                                 ))}
                                 {docRequests.length === 0 && (
-                                    <tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">No pending requests found.</td></tr>
+                                    <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">No pending requests found.</td></tr>
                                 )}
                             </tbody>
                         </table>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-[#0B2C4A] text-white">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Role</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
                                     {activeTab === 'pending' && (
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Review</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Review</th>
                                     )}
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {users.map((user) => (
-                                    <tr key={user._id}>
+                                    <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
+                                            <div className="text-sm font-bold text-[#0B2C4A]">{user.fullName}</div>
                                             <div className="text-sm text-gray-500">{user.email}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">

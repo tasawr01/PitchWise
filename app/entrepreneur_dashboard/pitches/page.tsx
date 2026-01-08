@@ -28,66 +28,94 @@ export default async function MyPitches() {
     const pitches = await getPitches();
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-8">
+        <div className="space-y-8">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">My Pitches</h2>
-                    <p className="text-gray-500">Manage your startup listings and view their status.</p>
+                    <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">My Pitches</h2>
+                    <p className="text-gray-500 mt-2 text-lg">Manage and track your startup proposals.</p>
                 </div>
                 <Link
                     href="/entrepreneur_dashboard/pitches/create"
-                    className="fixed bottom-6 right-6 z-50 md:static bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 md:py-2.5 md:rounded-lg rounded-full shadow-lg md:shadow-sm transition-all flex items-center gap-2"
+                    className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-[#0B2C4A] hover:bg-[#09223a] transition-all hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0B2C4A]"
                 >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
                     Create New Pitch
                 </Link>
-            </div>
+            </header>
 
             {pitches.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
-                        🚀
+                <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300">
+                    <div className="w-20 h-20 bg-[#0B2C4A]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="h-10 w-10 text-[#0B2C4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">No Pitches Yet</h3>
-                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                        You haven't listed any startups yet. Create your first pitch to start connecting with investors under the 9-Step Verification process.
-                    </p>
-                    <Link
-                        href="/entrepreneur_dashboard/pitches/create"
-                        className="text-blue-600 font-medium hover:text-blue-800"
-                    >
-                        Start your first pitch &rarr;
-                    </Link>
+                    <h3 className="mt-2 text-xl font-bold text-gray-900">No pitches found</h3>
+                    <p className="mt-2 text-gray-500 max-w-sm mx-auto">Get started by creating a new pitch to showcase your startup to investors.</p>
+                    <div className="mt-8">
+                        <Link
+                            href="/entrepreneur_dashboard/pitches/create"
+                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-[#0B2C4A] hover:bg-[#09223a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0B2C4A] transition-all"
+                        >
+                            Start your first pitch
+                        </Link>
+                    </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {pitches.map((pitch: any) => (
-                        <div key={pitch._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
-                            <div className="h-40 bg-gray-100 relative">
+                        <div key={pitch._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full group">
+                            {/* Card Image */}
+                            <div className="h-52 bg-gray-100 relative overflow-hidden">
                                 {pitch.demoUrl ? (
-                                    <Image src={pitch.demoUrl} alt={pitch.title} fill className="object-cover" />
+                                    <Image
+                                        src={pitch.demoUrl}
+                                        alt={pitch.title}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    <div className="w-full h-full bg-gradient-to-br from-[#0B2C4A]/5 to-[#0B2C4A]/10 flex items-center justify-center text-[#0B2C4A]/30">
+                                        <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
                                     </div>
                                 )}
-                                <div className="absolute top-3 right-3">
+                                <div className="absolute top-4 right-4 z-10">
                                     <StatusBadge status={pitch.status} />
                                 </div>
-                            </div>
-                            <div className="p-5">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div className="flex-1 min-w-0 mr-2">
-                                        <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{pitch.title}</h3>
-                                    </div>
-                                    <DeletePitchButton pitchId={pitch._id} />
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                                    <span className="text-white text-xs font-bold uppercase tracking-wider bg-black/30 backdrop-blur-sm px-2 py-1 rounded-md border border-white/20">
+                                        {pitch.industry}
+                                    </span>
                                 </div>
-                                <span className="block text-sm font-semibold text-gray-500 mb-2">${pitch.amountRequired.toLocaleString()}</span>
-                                <p className="text-sm text-gray-500 mb-4 line-clamp-2">{pitch.problemStatement}</p>
+                            </div>
 
-                                <div className="flex items-center justify-between text-xs text-gray-400 pt-4 border-t border-gray-50">
-                                    <span>{pitch.industry}</span>
-                                    <span>{new Date(pitch.createdAt).toLocaleDateString()}</span>
+                            <div className="p-6 flex-1 flex flex-col">
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-[#0B2C4A] transition-colors">{pitch.title}</h3>
+                                        {/* Optional: Add simplified menu or view count here */}
+                                    </div>
+                                    <span className="inline-block text-lg font-bold text-green-600 mb-3">
+                                        ${pitch.amountRequired.toLocaleString()}
+                                    </span>
+                                    <p className="text-gray-500 text-sm line-clamp-3 mb-6 leading-relaxed">
+                                        {pitch.problemStatement}
+                                    </p>
+                                </div>
+
+                                <div className="pt-4 border-t border-gray-50 flex items-center gap-3">
+                                    <DeletePitchButton pitchId={pitch._id} />
+                                    <button
+                                        disabled
+                                        className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm font-semibold text-gray-400 cursor-not-allowed opacity-60"
+                                        title="Editing is currently disabled"
+                                    >
+                                        Edit Details
+                                    </button>
                                 </div>
                             </div>
                         </div>

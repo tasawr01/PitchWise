@@ -100,7 +100,7 @@ export default function CreatePitch() {
                         <span>{Math.round((step / 9) * 100)}% Completed</span>
                     </div>
                     <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-blue-600 h-full transition-all duration-300" style={{ width: `${(step / 9) * 100}%` }}></div>
+                        <div className="bg-[#0B2C4A] h-full transition-all duration-300" style={{ width: `${(step / 9) * 100}%` }}></div>
                     </div>
                 </div>
 
@@ -131,10 +131,10 @@ export default function CreatePitch() {
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700">Key Features (Max 5)</label>
                                 {formData.keyFeatures.map((feat, i) => (
-                                    <input key={i} type="text" value={feat} onChange={(e) => handleArrayChange(i, e.target.value, 'keyFeatures')} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border mb-2" placeholder={`Feature ${i + 1}`} />
+                                    <input key={i} type="text" value={feat} onChange={(e) => handleArrayChange(i, e.target.value, 'keyFeatures')} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] sm:text-sm p-2 border mb-2" placeholder={`Feature ${i + 1}`} />
                                 ))}
                                 {formData.keyFeatures.length < 5 && (
-                                    <button type="button" onClick={() => addArrayItem('keyFeatures')} className="text-sm text-blue-600 font-medium">+ Add Feature</button>
+                                    <button type="button" onClick={() => addArrayItem('keyFeatures')} className="text-sm text-[#0B2C4A] font-medium">+ Add Feature</button>
                                 )}
                             </div>
                         </div>
@@ -144,7 +144,7 @@ export default function CreatePitch() {
                             <h2 className="text-2xl font-bold text-gray-800">Market & Customers</h2>
                             <Select label="Target Market" name="marketType" value={formData.marketType} onChange={handleChange} options={['B2B', 'B2C', 'Both']} />
                             <div className="flex items-center gap-2">
-                                <input type="checkbox" name="hasExistingCustomers" checked={formData.hasExistingCustomers} onChange={handleChange} id="hasCust" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                                <input type="checkbox" name="hasExistingCustomers" checked={formData.hasExistingCustomers} onChange={handleChange} id="hasCust" className="h-4 w-4 text-[#0B2C4A] focus:ring-[#0B2C4A] border-gray-300 rounded" />
                                 <label htmlFor="hasCust" className="text-sm text-gray-700">Do you have existing customers?</label>
                             </div>
                             {formData.hasExistingCustomers && (
@@ -168,10 +168,10 @@ export default function CreatePitch() {
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700">Major Milestones</label>
                                 {formData.majorMilestones.map((m, i) => (
-                                    <input key={i} type="text" value={m} onChange={(e) => handleArrayChange(i, e.target.value, 'majorMilestones')} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border mb-2" placeholder={`Milestone ${i + 1}`} />
+                                    <input key={i} type="text" value={m} onChange={(e) => handleArrayChange(i, e.target.value, 'majorMilestones')} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] sm:text-sm p-2 border mb-2" placeholder={`Milestone ${i + 1}`} />
                                 ))}
                                 {formData.majorMilestones.length < 5 && (
-                                    <button type="button" onClick={() => addArrayItem('majorMilestones')} className="text-sm text-blue-600 font-medium">+ Add Milestone</button>
+                                    <button type="button" onClick={() => addArrayItem('majorMilestones')} className="text-sm text-[#0B2C4A] font-medium">+ Add Milestone</button>
                                 )}
                             </div>
                         </div>
@@ -218,7 +218,7 @@ export default function CreatePitch() {
                     {step < 9 ? (
                         <button
                             onClick={nextStep}
-                            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+                            className="px-6 py-2.5 bg-[#0B2C4A] text-white rounded-lg font-medium hover:bg-[#09223a] transition"
                         >
                             Next Step
                         </button>
@@ -240,21 +240,21 @@ export default function CreatePitch() {
 const Input = ({ label, ...props }: any) => (
     <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <input {...props} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2.5 border transition-colors" />
+        <input {...props} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] sm:text-sm p-2.5 border transition-colors" />
     </div>
 );
 
 const TextArea = ({ label, ...props }: any) => (
     <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <textarea {...props} rows={3} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2.5 border transition-colors" />
+        <textarea {...props} rows={3} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] sm:text-sm p-2.5 border transition-colors" />
     </div>
 );
 
 const Select = ({ label, options, ...props }: any) => (
     <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <select {...props} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2.5 border transition-colors bg-white">
+        <select {...props} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0B2C4A] focus:ring-[#0B2C4A] sm:text-sm p-2.5 border transition-colors bg-white">
             {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
     </div>
@@ -263,6 +263,6 @@ const Select = ({ label, options, ...props }: any) => (
 const FileInput = ({ label, ...props }: any) => (
     <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <input type="file" {...props} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition" />
+        <input type="file" {...props} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#0B2C4A]/5 file:text-[#0B2C4A] hover:file:bg-[#0B2C4A]/10 transition" />
     </div>
 );

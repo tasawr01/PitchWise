@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
 import { deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
+import { createNotification } from '@/lib/notification';
 
 // Helper to verify auth and return payload
 async function verifyAuth(req: Request) {
@@ -53,6 +54,14 @@ export async function DELETE(
 
         // Delete the pitch
         await Pitch.findByIdAndDelete(id);
+
+        // Notify Entrepreneur
+        await createNotification(
+            pitch.entrepreneur,
+            'Entrepreneur',
+            `Your pitch "${pitch.title}" has been deleted.`,
+            'warning'
+        );
 
         return NextResponse.json({ message: 'Pitch deleted successfully' });
 

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import NotificationBell from './NotificationBell';
 
 interface NavbarProps {
     title: string;
@@ -26,6 +27,7 @@ export default function DashboardNavbar({ title, profilePhoto }: NavbarProps) {
                 <span className="font-bold text-xl text-[#0B2C4A]">{title}</span>
             </div>
             <div className="flex items-center gap-4">
+                <NotificationBell />
                 {profilePhoto && (
                     <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-200">
                         <Image src={profilePhoto} alt="Profile" fill className="object-cover" sizes="32px" />

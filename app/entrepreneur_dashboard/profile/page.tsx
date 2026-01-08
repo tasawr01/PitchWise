@@ -30,7 +30,7 @@ export default function EntrepreneurProfile() {
         <div className="max-w-5xl mx-auto space-y-8 pb-12">
             {/* Header Section */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
-                <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
+                <div className="h-32 bg-[#0B2C4A]"></div>
                 <div className="px-8 pb-8">
                     <div className="relative flex justify-between items-end -mt-12 mb-6">
                         <div className="flex items-end gap-6">
@@ -50,7 +50,7 @@ export default function EntrepreneurProfile() {
                                 )}
                             </div>
                             <div className="mb-2">
-                                <h1 className="text-3xl font-bold text-gray-900">{user.fullName}</h1>
+                                <h1 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">{user.fullName}</h1>
                                 <p className="text-gray-500">{user.email}</p>
                             </div>
                         </div>
@@ -94,7 +94,7 @@ export default function EntrepreneurProfile() {
                 <div className="lg:col-span-3 space-y-8">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-                            <span className="bg-indigo-100 p-1.5 rounded-md text-indigo-600">
+                            <span className="bg-[#0B2C4A]/10 p-1.5 rounded-md text-[#0B2C4A]">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0c0 .884.223 1.636.568 2.33M15 6a3 3 0 00-6 0M9 20h6" /></svg>
                             </span>
                             Identity Verification
@@ -163,7 +163,7 @@ export default function EntrepreneurProfile() {
                         ) : (
                             <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                                 <p className="text-gray-500 mb-2">No identity documents updated yet.</p>
-                                <Link href="/entrepreneur_dashboard/settings" className="text-blue-600 hover:underline font-medium">Verify Identity Now</Link>
+                                <Link href="/entrepreneur_dashboard/settings" className="text-[#0B2C4A] hover:underline font-medium">Verify Identity Now</Link>
                             </div>
                         )}
                     </div>

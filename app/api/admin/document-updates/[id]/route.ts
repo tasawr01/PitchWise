@@ -71,6 +71,17 @@ export async function POST(
 
         await DocumentUpdate.findByIdAndDelete(id);
 
+        // Notify Entrepreneur
+        const { createNotification } = await import('@/lib/notification');
+        await createNotification(
+            entrepreneurId,
+            'Entrepreneur',
+            'Your document update request has been approved and your profile updated.',
+            'success',
+            undefined, // No ID since it's deleted
+            'DocumentUpdate'
+        );
+
         return NextResponse.json({ message: 'Request approved and profile updated.' });
 
     } else if (action === 'reject') {
@@ -81,7 +92,16 @@ export async function POST(
 
         request.status = 'rejected';
 
-
+        // Notify Entrepreneur
+        const { createNotification } = await import('@/lib/notification');
+        await createNotification(
+            entrepreneurId,
+            'Entrepreneur',
+            'Your document update request has been rejected.',
+            'error',
+            undefined,
+            'DocumentUpdate'
+        );
 
         await DocumentUpdate.findByIdAndDelete(id);
 

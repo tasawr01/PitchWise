@@ -40,7 +40,15 @@ export async function POST(req: Request) {
         }
 
         // Trigger Notification
-
+        const { createNotification } = await import('@/lib/notification');
+        await createNotification(
+            pitch.entrepreneur,
+            'Entrepreneur',
+            `Your pitch "${pitch.title}" has been ${status}`,
+            status === 'approved' ? 'success' : 'error',
+            pitch._id,
+            'Pitch'
+        );
 
         return NextResponse.json({ message: `Pitch ${status} successfully`, pitch });
 

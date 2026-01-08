@@ -99,6 +99,15 @@ export async function POST(req: Request) {
 
         const newPitch = await Pitch.create(pitchData);
 
+        // Notify Admins
+        const { notifyAdmins } = await import('@/lib/notification');
+        await notifyAdmins(
+            `New Pitch Submitted: ${pitchData.title}`,
+            'info',
+            newPitch._id,
+            'Pitch'
+        );
+
 
 
 

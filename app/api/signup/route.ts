@@ -106,7 +106,14 @@ export async function POST(req: Request) {
             newUser = await Investor.create(userData);
         }
 
-
+        // Notify Admins
+        const { notifyAdmins } = await import('@/lib/notification');
+        await notifyAdmins(
+            `New ${role} registration: ${userData.fullName || email}`,
+            'info',
+            newUser._id,
+            role === 'entrepreneur' ? 'Entrepreneur' : 'Investor'
+        );
 
         return NextResponse.json({ message: 'Registration successful', userId: newUser._id });
 
