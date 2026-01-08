@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import DocumentUpdate from '@/models/DocumentUpdate';
 import Entrepreneur from '@/models/Entrepreneur';
-import Notification from '@/models/Notification';
+
 import { deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
 
@@ -30,12 +30,23 @@ export async function POST(
     const { id } = await params;
     const { action } = await req.json(); // 'approve' | 'reject'
 
-    const request = await DocumentUpdate.findById(id).populate('entrepreneur');
+    // Fetch Request WITHOUT populate first to get the raw ID matching schema type
+    const request = await DocumentUpdate.findById(id);
     if (!request) {
         return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
 
-    const user = request.entrepreneur;
+    // Explicitly fetch the Entrepreneur using the ID from the request
+    // This assumes request.entrepreneur is stored as an ObjectId in the DB
+    const entrepreneurId = request.entrepreneur;
+    const user = await Entrepreneur.findById(entrepreneurId);
+
+    if (!user) {
+        console.error(`DEBUG: Entrepreneur not found for ID: ${entrepreneurId}`);
+        return NextResponse.json({ error: 'Associated Entrepreneur not found' }, { status: 404 });
+    }
+
+    console.log(`DEBUG: Processing ${action} for Request ${id}, User ${entrepreneurId}`);
 
     if (action === 'approve') {
         // 1. Delete USER'S OLD Cloudinary files
@@ -53,23 +64,12 @@ export async function POST(
 
         await user.save();
 
-        request.status = 'approved';
-        await request.save(); // Keep history or delete? Let's keep history for now or just delete.
-        // User said "delete old documents... update new one". 
-        // Keeping the request record is fine, but maybe redundant if we don't show history.
-        // I'll delete the request record to keep DB clean as typical for "Inbox" style.
-        await DocumentUpdate.findByIdAndDelete(id);
 
-        // Notify Entrepreneur
-        await Notification.create({
-            userId: user._id,
-            userRole: 'entrepreneur',
-            title: 'Document Verification Approved',
-            message: 'Your document verification request has been Approved.',
-            type: 'success',
-            link: '/entrepreneur_dashboard/settings',
-            isRead: false
-        });
+
+        request.status = 'approved';
+        await request.save();
+
+        await DocumentUpdate.findByIdAndDelete(id);
 
         return NextResponse.json({ message: 'Request approved and profile updated.' });
 
@@ -80,18 +80,10 @@ export async function POST(
         if (request.passportScan) await deleteFromCloudinary(request.passportScan);
 
         request.status = 'rejected';
-        await DocumentUpdate.findByIdAndDelete(id);
 
-        // Notify Entrepreneur
-        await Notification.create({
-            userId: user._id,
-            userRole: 'entrepreneur',
-            title: 'Document Verification Rejected',
-            message: 'Your document verification request has been Rejected.',
-            type: 'error',
-            link: '/entrepreneur_dashboard/settings',
-            isRead: false
-        });
+
+
+        await DocumentUpdate.findByIdAndDelete(id);
 
         return NextResponse.json({ message: 'Request rejected and temporary files deleted.' });
     }

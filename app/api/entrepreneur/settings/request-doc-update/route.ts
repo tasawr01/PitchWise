@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import DocumentUpdate from '@/models/DocumentUpdate';
 import { jwtVerify } from 'jose';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-import Notification from '@/models/Notification';
+
 import Admin from '@/models/Admin';
 import Entrepreneur from '@/models/Entrepreneur';
 
@@ -108,18 +108,7 @@ export async function POST(req: Request) {
         // Fetch user details for notification
         const user = await Entrepreneur.findById(userId);
 
-        // Notify Admins
-        const admins = await Admin.find({});
-        const adminNotifications = admins.map(admin => ({
-            userId: admin._id,
-            userRole: 'admin',
-            title: 'New Document Update Request',
-            message: `New document verification request from ${user?.fullName || 'an entrepreneur'}.`,
-            type: 'warning',
-            link: '/admin/users',
-            isRead: false
-        }));
-        if (adminNotifications.length > 0) await Notification.insertMany(adminNotifications);
+
 
         return NextResponse.json({
             message: 'Document update requested submitted successfully',

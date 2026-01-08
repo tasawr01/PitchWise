@@ -4,7 +4,7 @@ import Pitch from '@/models/Pitch';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
 import Settings from '@/models/Settings';
-import Notification from '@/models/Notification';
+
 import Admin from '@/models/Admin';
 
 // Helper to verify entrepreneur
@@ -99,31 +99,11 @@ export async function POST(req: Request) {
 
         const newPitch = await Pitch.create(pitchData);
 
-        // Notify Entrepreneur
-        await Notification.create({
-            userId: user.id,
-            userRole: 'entrepreneur',
-            title: 'Pitch Submitted',
-            message: `Your pitch '${pitchData.title}' has been submitted successfully and is pending review.`,
-            type: 'success',
-            link: '/entrepreneur_dashboard/pitches',
-            isRead: false
-        });
 
 
 
-        // Fetch Admins
-        const admins = await Admin.find({});
-        const adminNotifications = admins.map(admin => ({
-            userId: admin._id,
-            userRole: 'admin',
-            title: 'New Pitch Submitted',
-            message: `New pitch '${pitchData.title}' submitted by ${user.fullName || 'an entrepreneur'}.`,
-            type: 'info',
-            link: '/admin/pitches',
-            isRead: false
-        }));
-        if (adminNotifications.length > 0) await Notification.insertMany(adminNotifications);
+
+
 
         return NextResponse.json({ message: 'Pitch submitted successfully', pitchId: newPitch._id });
 

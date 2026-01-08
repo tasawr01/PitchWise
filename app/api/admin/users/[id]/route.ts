@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Entrepreneur from '@/models/Entrepreneur';
 import Investor from '@/models/Investor';
 import Pitch from '@/models/Pitch';
-import Notification from '@/models/Notification';
+
 import { deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
 
@@ -52,29 +52,7 @@ export async function PATCH(
 
         await user.save();
 
-        // Send Notification
-        let title = 'Profile Update';
-        let message = 'Your profile has been updated by the admin.';
-        let type = 'info';
 
-        if (status === 'approved') {
-            title = 'Profile Approved';
-            message = 'Congratulations! Your profile has been verified and approved.';
-            type = 'success';
-        } else if (status === 'rejected') {
-            title = 'Profile Rejected';
-            message = `Your profile has been rejected. Reason: ${rejectionReason || 'Not specified'}`;
-            type = 'error';
-        }
-
-        await Notification.create({
-            userId: user._id,
-            userRole: role,
-            title,
-            message,
-            type,
-            isRead: false
-        });
 
         return NextResponse.json({ message: 'User updated successfully', user });
 
