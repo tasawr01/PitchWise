@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 
 export default function AdminUsers() {
-    const [activeTab, setActiveTab] = useState('all'); // 'pending' | 'all' | 'doc-requests'
+    const [activeTab, setActiveTab] = useState('approved'); // 'pending' | 'approved' | 'doc-requests'
     const [users, setUsers] = useState<any[]>([]);
     const [docRequests, setDocRequests] = useState<any[]>([]);
+    const [selectedUser, setSelectedUser] = useState<any>(null); // For Review Modal
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -57,6 +58,28 @@ export default function AdminUsers() {
         }
     };
 
+    const handleStatusUpdate = async (userId: string, status: 'approved' | 'rejected') => {
+        if (!confirm(`Are you sure you want to ${status.toUpperCase()} this user?`)) return;
+
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            if (res.ok) {
+                alert(`User ${status} successfully`);
+                setSelectedUser(null); // Close modal if open
+                fetchUsers();
+            } else {
+                alert('Failed to update user status');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error updating user status');
+        }
+    };
+
     const handleDocAction = async (requestId: string, action: 'approved' | 'rejected') => {
         if (!confirm(`Are you sure you want to ${action.toUpperCase()} this request?`)) return;
 
@@ -77,6 +100,126 @@ export default function AdminUsers() {
         }
     };
 
+    // Modal Component
+    const UserReviewModal = ({ user, onClose }: { user: any, onClose: () => void }) => {
+        if (!user) return null;
+        return (
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto transition-all duration-300">
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/20">
+                    <div className="p-6">
+                        <div className="flex justify-between items-start mb-6">
+                            <h3 className="text-xl font-bold text-gray-900">Review User Application</h3>
+                            <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
+                                <span className="text-2xl">&times;</span>
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Personal Info */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2 sm:col-span-1">
+                                    <h4 className="font-semibold text-gray-700 mb-2">Personal Information</h4>
+                                    <div className="space-y-1 text-sm">
+                                        <p><span className="text-gray-500">Name:</span> {user.fullName}</p>
+                                        <p><span className="text-gray-500">Email:</span> {user.email}</p>
+                                        <p><span className="text-gray-500">Phone:</span> {user.phone}</p>
+                                        <p><span className="text-gray-500">Type:</span> <span className="uppercase">{user.role}</span></p>
+                                    </div>
+                                </div>
+                                <div className="col-span-2 sm:col-span-1">
+                                    <h4 className="font-semibold text-gray-700 mb-2">Profile Photo</h4>
+                                    {user.profilePhoto ? (
+                                        <img src={user.profilePhoto} alt="Profile" className="w-20 h-20 rounded-full object-cover border" />
+                                    ) : (
+                                        <span className="text-gray-400 text-sm">No photo uploaded</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            {/* Document Info */}
+                            <div>
+                                <h4 className="font-semibold text-gray-700 mb-3">Identity Documents ({user.documentType?.toUpperCase()})</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="text-sm space-y-1">
+                                        <p><span className="text-gray-500">Number:</span> {user.documentType === 'cnic' ? user.cnicNumber : user.passportNumber}</p>
+                                        {user.documentType === 'passport' && (
+                                            <>
+                                                <p><span className="text-gray-500">Issuing Country:</span> {user.issuingCountry}</p>
+                                                <p><span className="text-gray-500">Expiry Date:</span> {user.expiryDate}</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {user.documentType === 'cnic' ? (
+                                        <>
+                                            <div>
+                                                <p className="text-xs text-gray-500 mb-1">CNIC Front</p>
+                                                {user.cnicFront ? (
+                                                    <a href={user.cnicFront} target="_blank" rel="noopener noreferrer">
+                                                        <img src={user.cnicFront} alt="CNIC Front" className="w-full h-32 object-cover rounded border hover:opacity-90 transition" />
+                                                    </a>
+                                                ) : <span className="text-red-500 text-sm">Missing</span>}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 mb-1">CNIC Back</p>
+                                                {user.cnicBack ? (
+                                                    <a href={user.cnicBack} target="_blank" rel="noopener noreferrer">
+                                                        <img src={user.cnicBack} alt="CNIC Back" className="w-full h-32 object-cover rounded border hover:opacity-90 transition" />
+                                                    </a>
+                                                ) : <span className="text-red-500 text-sm">Missing</span>}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div>
+                                            <p className="text-xs text-gray-500 mb-1">Passport Scan</p>
+                                            {user.passportScan ? (
+                                                <a href={user.passportScan} target="_blank" rel="noopener noreferrer">
+                                                    <img src={user.passportScan} alt="Passport Scan" className="w-full h-48 object-cover rounded border hover:opacity-90 transition" />
+                                                </a>
+                                            ) : <span className="text-red-500 text-sm">Missing</span>}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Extra Info based on Role */}
+                            {user.role === 'entrepreneur' && (
+                                <>
+                                    <hr />
+                                    <div>
+                                        <h4 className="font-semibold text-gray-700 mb-2">Startup Info</h4>
+                                        <p className="text-sm"><span className="text-gray-500">Startup Name:</span> {user.startupName}</p>
+                                        <p className="text-sm"><span className="text-gray-500">Category:</span> {user.startupCategory}</p>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Actions Footer */}
+                        <div className="mt-8 pt-4 border-t flex justify-end gap-3">
+                            <button
+                                onClick={() => handleStatusUpdate(user._id, 'rejected')}
+                                className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 font-medium"
+                            >
+                                Reject
+                            </button>
+                            <button
+                                onClick={() => handleStatusUpdate(user._id, 'approved')}
+                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium shadow-sm transition-colors"
+                            >
+                                Approve User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
@@ -84,8 +227,8 @@ export default function AdminUsers() {
             {/* Tabs */}
             <div className="flex gap-4 border-b border-gray-200">
                 <button
-                    onClick={() => setActiveTab('all')}
-                    className={`pb-2 px-1 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600 font-bold' : 'text-gray-500'}`}
+                    onClick={() => setActiveTab('approved')}
+                    className={`pb-2 px-1 ${activeTab === 'approved' ? 'border-b-2 border-blue-600 text-blue-600 font-bold' : 'text-gray-500'}`}
                 >
                     All Users
                 </button>
@@ -164,6 +307,9 @@ export default function AdminUsers() {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    {activeTab === 'pending' && (
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Review</th>
+                                    )}
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
                             </thead>
@@ -182,28 +328,66 @@ export default function AdminUsers() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {user.status}
                                         </td>
+                                        {activeTab === 'pending' && (
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <button
+                                                    onClick={() => setSelectedUser(user)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-full text-sm font-medium transition-colors duration-200 border border-indigo-200"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                    Review
+                                                </button>
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button
-                                                onClick={() => handleDeleteUser(user._id)}
-                                                className="text-red-600 hover:text-red-900 flex items-center gap-1 ml-auto"
-                                                title="Delete User & Data"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                                Delete
-                                            </button>
+                                            <div className="flex justify-end gap-2">
+                                                {activeTab === 'pending' ? (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(user._id, 'approved')}
+                                                            className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md shadow-sm transition-colors text-xs uppercase font-bold tracking-wide"
+                                                        >
+                                                            Accept
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(user._id, 'rejected')}
+                                                            className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md shadow-sm transition-colors text-xs uppercase font-bold tracking-wide"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleDeleteUser(user._id)}
+                                                        className="text-red-600 hover:text-red-900 flex items-center gap-1 ml-auto"
+                                                        title="Delete User & Data"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                        Delete
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
                                 {users.length === 0 && (
-                                    <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">No users found.</td></tr>
+                                    <tr><td colSpan={activeTab === 'pending' ? 5 : 4} className="px-6 py-4 text-center text-gray-500">
+                                        {activeTab === 'pending' ? 'No pending approvals.' : 'No users found.'}
+                                    </td></tr>
                                 )}
                             </tbody>
                         </table>
                     )}
                 </div>
             )}
+
+            {/* Render Modal */}
+            {selectedUser && <UserReviewModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
         </div>
     );
 }
