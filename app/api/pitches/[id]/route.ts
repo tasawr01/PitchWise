@@ -18,6 +18,26 @@ async function verifyAuth(req: Request) {
     }
 }
 
+// GET /api/pitches/[id]
+export async function GET(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        await dbConnect();
+        const { id } = await params;
+
+        const pitch = await Pitch.findById(id).populate('entrepreneur', 'fullName email profilePhoto');
+        if (!pitch) {
+            return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ pitch });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
 // DELETE /api/pitches/[id]
 export async function DELETE(
     req: Request,
@@ -55,13 +75,15 @@ export async function DELETE(
         // Delete the pitch
         await Pitch.findByIdAndDelete(id);
 
-        // Notify Entrepreneur
-        await createNotification(
-            pitch.entrepreneur,
-            'Entrepreneur',
-            `Your pitch "${pitch.title}" has been deleted.`,
-            'warning'
-        );
+        // Notify Entrepreneur (if admin deleted it)
+        if (isAdmin) {
+            await createNotification(
+                pitch.entrepreneur,
+                'Entrepreneur',
+                `Your pitch "${pitch.title}" has been deleted by an admin.`,
+                'warning'
+            );
+        }
 
         return NextResponse.json({ message: 'Pitch deleted successfully' });
 

@@ -38,7 +38,7 @@ export default async function PitchDetailsPage({ params }: { params: { id: strin
 
     return (
         <div className="max-w-5xl mx-auto pb-12">
-            <div className="mb-6">
+            <div className="mb-6 flex justify-between items-center">
                 <Link
                     href="/entrepreneur_dashboard/pitches"
                     className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#0B2C4A] transition-colors"
@@ -47,6 +47,15 @@ export default async function PitchDetailsPage({ params }: { params: { id: strin
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Back to My Pitches
+                </Link>
+                <Link
+                    href={`/entrepreneur_dashboard/pitches/update/${pitch._id}`}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0B2C4A] hover:bg-[#09223a] transition-all shadow-sm hover:shadow-md"
+                >
+                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Update Pitch
                 </Link>
             </div>
 
