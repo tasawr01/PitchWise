@@ -21,10 +21,11 @@ async function verifyAuth(req: Request) {
 // GET /api/pitches/[id]
 export async function GET(
     req: Request,
-    { params }: { params: Promise<{ id: string }> }
+    context: any
 ) {
     try {
         await dbConnect();
+        const { params } = context;
         const { id } = await params;
 
         const pitch = await Pitch.findById(id).populate('entrepreneur', 'fullName email profilePhoto');
@@ -41,9 +42,10 @@ export async function GET(
 // DELETE /api/pitches/[id]
 export async function DELETE(
     req: Request,
-    { params }: { params: Promise<{ id: string }> }
+    context: any
 ) {
     try {
+        const { params } = context;
         const user = await verifyAuth(req);
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
