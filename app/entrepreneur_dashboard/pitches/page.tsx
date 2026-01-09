@@ -68,13 +68,14 @@ export default async function MyPitches() {
                     {pitches.map((pitch: any) => (
                         <div key={pitch._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full group">
                             {/* Card Image */}
-                            <div className="h-52 bg-gray-100 relative overflow-hidden">
+                            <Link href={`/entrepreneur_dashboard/pitches/${pitch._id}`} className="block h-52 bg-gray-100 relative overflow-hidden group-hover:opacity-90 transition-opacity">
                                 {pitch.demoUrl ? (
                                     <Image
                                         src={pitch.demoUrl}
                                         alt={pitch.title}
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-br from-[#0B2C4A]/5 to-[#0B2C4A]/10 flex items-center justify-center text-[#0B2C4A]/30">
@@ -91,13 +92,12 @@ export default async function MyPitches() {
                                         {pitch.industry}
                                     </span>
                                 </div>
-                            </div>
+                            </Link>
 
                             <div className="p-6 flex-1 flex flex-col">
-                                <div className="flex-1">
+                                <Link href={`/entrepreneur_dashboard/pitches/${pitch._id}`} className="flex-1 block">
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-[#0B2C4A] transition-colors">{pitch.title}</h3>
-                                        {/* Optional: Add simplified menu or view count here */}
                                     </div>
                                     <span className="inline-block text-lg font-bold text-green-600 mb-3">
                                         ${pitch.amountRequired.toLocaleString()}
@@ -105,17 +105,16 @@ export default async function MyPitches() {
                                     <p className="text-gray-500 text-sm line-clamp-3 mb-6 leading-relaxed">
                                         {pitch.problemStatement}
                                     </p>
-                                </div>
+                                </Link>
 
                                 <div className="pt-4 border-t border-gray-50 flex items-center gap-3">
                                     <DeletePitchButton pitchId={pitch._id} />
-                                    <button
-                                        disabled
-                                        className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm font-semibold text-gray-400 cursor-not-allowed opacity-60"
-                                        title="Editing is currently disabled"
+                                    <Link
+                                        href={`/entrepreneur_dashboard/pitches/${pitch._id}`}
+                                        className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-200 hover:text-[#0B2C4A] transition-all"
                                     >
-                                        Edit Details
-                                    </button>
+                                        View Details
+                                    </Link>
                                 </div>
                             </div>
                         </div>
