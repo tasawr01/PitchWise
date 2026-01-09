@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
+import '@/models/Entrepreneur'; // Ensure Entrepreneur model is registered for population
 import { deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
 import { createNotification } from '@/lib/notification';
