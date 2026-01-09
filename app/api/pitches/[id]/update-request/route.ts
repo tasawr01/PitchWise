@@ -19,7 +19,7 @@ async function verifyAuth(req: Request) {
     }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
