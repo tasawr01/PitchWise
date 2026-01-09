@@ -64,57 +64,62 @@ export default async function MyPitches() {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {pitches.map((pitch: any) => (
-                        <div key={pitch._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full group">
+                        <div key={pitch._id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full group">
                             {/* Card Image */}
-                            <Link href={`/entrepreneur_dashboard/pitches/${pitch._id}`} className="block h-52 bg-gray-100 relative overflow-hidden group-hover:opacity-90 transition-opacity">
+                            <Link href={`/entrepreneur_dashboard/pitches/${pitch._id}`} className="block h-40 bg-gray-100 relative overflow-hidden group-hover:opacity-95 transition-opacity">
                                 {pitch.demoUrl ? (
                                     <Image
                                         src={pitch.demoUrl}
                                         alt={pitch.title}
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-[#0B2C4A]/5 to-[#0B2C4A]/10 flex items-center justify-center text-[#0B2C4A]/30">
-                                        <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                                    <div className="w-full h-full bg-gradient-to-br from-[#0B2C4A]/5 to-[#0B2C4A]/10 flex items-center justify-center text-[#0B2C4A]/20">
+                                        <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
                                 )}
-                                <div className="absolute top-4 right-4 z-10">
+                                <div className="absolute top-3 right-3 z-10">
                                     <StatusBadge status={pitch.status} />
                                 </div>
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                                    <span className="text-white text-xs font-bold uppercase tracking-wider bg-black/30 backdrop-blur-sm px-2 py-1 rounded-md border border-white/20">
+                                <div className="absolute bottom-3 left-3">
+                                    <span className="text-white text-[10px] font-bold uppercase tracking-wider bg-black/40 backdrop-blur-md px-2 py-0.5 rounded shadow-sm border border-white/10">
                                         {pitch.industry}
                                     </span>
                                 </div>
                             </Link>
 
-                            <div className="p-6 flex-1 flex flex-col">
+                            <div className="p-4 flex-1 flex flex-col">
                                 <Link href={`/entrepreneur_dashboard/pitches/${pitch._id}`} className="flex-1 block">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-[#0B2C4A] transition-colors">{pitch.title}</h3>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h3 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-[#0B2C4A] transition-colors">{pitch.title}</h3>
                                     </div>
-                                    <span className="inline-block text-lg font-bold text-green-600 mb-3">
-                                        ${pitch.amountRequired.toLocaleString()}
-                                    </span>
-                                    <p className="text-gray-500 text-sm line-clamp-3 mb-6 leading-relaxed">
+                                    <div className="flex items-baseline gap-1 mb-2">
+                                        <span className="text-sm text-gray-400 font-medium">Ask:</span>
+                                        <span className="text-base font-bold text-green-600">
+                                            ${pitch.amountRequired.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-500 text-xs line-clamp-2 mb-4 leading-relaxed h-8">
                                         {pitch.problemStatement}
                                     </p>
                                 </Link>
 
-                                <div className="pt-4 border-t border-gray-50 flex items-center gap-3">
-                                    <DeletePitchButton pitchId={pitch._id} />
+                                <div className="pt-3 border-t border-gray-50 flex items-center gap-2 mt-auto">
                                     <Link
                                         href={`/entrepreneur_dashboard/pitches/${pitch._id}`}
-                                        className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-200 hover:text-[#0B2C4A] transition-all"
+                                        className="flex-1 inline-flex justify-center items-center px-3 py-2 bg-[#0B2C4A]/5 border border-transparent rounded-lg text-xs font-bold text-[#0B2C4A] hover:bg-[#0B2C4A] hover:text-white transition-all uppercase tracking-wide"
                                     >
                                         View Details
                                     </Link>
+                                    <div className="scale-90">
+                                        <DeletePitchButton pitchId={pitch._id} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
