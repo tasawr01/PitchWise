@@ -24,7 +24,7 @@ export default function CreatePitch() {
         // Step 6
         totalUsers: 0, monthlyGrowthRate: 0, majorMilestones: [''],
         // Step 7
-        founderName: '', founderRole: '', founderExpYears: 0, teamSize: 1, linkedinUrl: '',
+        founderName: '', founderRole: '', founderExpYears: 0, teamSize: 1, websiteUrl: '',
         // Step 8
         amountRequired: 0, fundingType: 'Equity', equityOffered: 0, useOfFunds: '',
         // Step 9 (Files) - we keep file objects separately usually, but for simple state:
@@ -183,7 +183,7 @@ export default function CreatePitch() {
                             <Input label="Founder Role" name="founderRole" value={formData.founderRole} onChange={handleChange} />
                             <Input label="Experience (Years)" type="number" name="founderExpYears" value={formData.founderExpYears} onChange={handleChange} />
                             <Input label="Team Size" type="number" name="teamSize" value={formData.teamSize} onChange={handleChange} />
-                            <Input label="LinkedIn URL" name="linkedinUrl" value={formData.linkedinUrl} onChange={handleChange} />
+                            <Input label="Website URL" name="websiteUrl" value={formData.websiteUrl} onChange={handleChange} />
                         </div>
                     )}
                     {step === 8 && (

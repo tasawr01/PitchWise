@@ -206,7 +206,7 @@ export default function PitchManagement() {
                                     <Field label="Team Size" field="teamSize" />
                                 </div>
                                 <div className="mt-4">
-                                    <Field label="LinkedIn Profile" field="linkedinUrl" format={(v: any) => v ? <a href={v} target="_blank" className="text-blue-600 hover:underline">{v}</a> : 'N/A'} />
+                                    <Field label="Website Profile" field="websiteUrl" format={(v: any) => v ? <a href={v.startsWith('http') ? v : `https://${v}`} target="_blank" className="text-blue-600 hover:underline">{v}</a> : 'N/A'} />
                                 </div>
                             </div>
 

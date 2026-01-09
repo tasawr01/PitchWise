@@ -63,7 +63,7 @@ const PitchSchema = new mongoose.Schema({
     founderRole: { type: String, required: true },
     founderExpYears: { type: Number, required: true },
     teamSize: { type: Number, required: true },
-    linkedinUrl: { type: String },
+    websiteUrl: { type: String },
 
     // Step 8: Ask
     amountRequired: { type: Number, required: true },

@@ -64,7 +64,7 @@ const PitchUpdateSchema = new mongoose.Schema({
     founderRole: { type: String },
     founderExpYears: { type: Number },
     teamSize: { type: Number },
-    linkedinUrl: { type: String },
+    websiteUrl: { type: String },
 
     // Step 8: Ask
     amountRequired: { type: Number },
@@ -89,4 +89,5 @@ const PitchUpdateSchema = new mongoose.Schema({
     adminComment: { type: String }
 }, { timestamps: true });
 
+// Force schema refresh
 export default mongoose.models.PitchUpdate || mongoose.model('PitchUpdate', PitchUpdateSchema);

@@ -20,47 +20,72 @@ export default function UpdatePitch() {
         marketType: 'B2B', hasExistingCustomers: false, customerCount: 0,
         revenueModel: '', pricingModel: '', monthlyRevenue: 0,
         totalUsers: 0, monthlyGrowthRate: 0, majorMilestones: [''],
-        founderName: '', founderRole: '', founderExpYears: 0, teamSize: 1, linkedinUrl: '',
+        founderName: '', founderRole: '', founderExpYears: 0, teamSize: 1, websiteUrl: '',
         amountRequired: 0, fundingType: 'Equity', equityOffered: 0, useOfFunds: '',
         pitchDeck: null, financials: null, demo: null, // Files to upload
     });
 
+    const [hasPendingUpdate, setHasPendingUpdate] = useState(false);
+
     useEffect(() => {
         if (!id) return;
-        fetch(`/api/pitches/${id}`) // Re-using the GET single pitch API (needs to exist!)
-            .then(res => res.json())
-            .then(data => {
-                if (data.pitch) { // Adjust based on actual API response structure
-                    // Data usually comes as plain JSON, map it back to state
-                    const p = data.pitch;
-                    setFormData({
-                        ...p,
-                        // Ensure arrays are arrays
-                        keyFeatures: p.keyFeatures || [''],
-                        majorMilestones: p.majorMilestones || [''],
-                        // Reset files to null (users only upload if they want to change)
-                        pitchDeck: null,
-                        financials: null,
-                        demo: null
-                    });
-                } else if (data._id) {
-                    // If API returns direct object
-                    const p = data;
-                    setFormData({
-                        ...p,
-                        keyFeatures: p.keyFeatures || [''],
-                        majorMilestones: p.majorMilestones || [''],
-                        pitchDeck: null,
-                        financials: null,
-                        demo: null
-                    });
+
+        const loadData = async () => {
+            try {
+                // 1. Fetch Live Pitch
+                const pitchRes = await fetch(`/api/pitches/${id}`);
+                const pitchData = await pitchRes.json();
+
+                let baseData = {};
+
+                if (pitchData.pitch) {
+                    baseData = pitchData.pitch;
+                } else if (pitchData._id) {
+                    baseData = pitchData;
                 }
+
+                // 2. Fetch Pending Update
+                const updateRes = await fetch(`/api/pitches/${id}/update-request`);
+                const updateData = await updateRes.json();
+
+                let finalData: any = { ...baseData };
+
+                if (updateData.pendingUpdate) {
+                    setHasPendingUpdate(true);
+                    // Merge pending update ON TOP of live data
+                    finalData = { ...finalData, ...updateData.pendingUpdate };
+                    // Note: updateData might have some fields as undefined if not in the update schema, 
+                    // but Mongoose usually returns full object. 
+                    // IMPORTANT: Files might be strings in pendingUpdate, handle carefully if needed.
+                }
+
+                setFormData((prev: any) => ({
+                    ...prev,
+                    ...finalData,
+                    keyFeatures: finalData.keyFeatures || [''],
+                    majorMilestones: finalData.majorMilestones || [''],
+                    customerCount: finalData.customerCount || 0,
+                    monthlyRevenue: finalData.monthlyRevenue || 0,
+                    totalUsers: finalData.totalUsers || 0,
+                    monthlyGrowthRate: finalData.monthlyGrowthRate || 0,
+                    founderExpYears: finalData.founderExpYears || 0,
+                    teamSize: finalData.teamSize || 1,
+                    amountRequired: finalData.amountRequired || 0,
+                    equityOffered: finalData.equityOffered || 0,
+                    websiteUrl: finalData.websiteUrl || '', // Ensure this takes precedence
+                    pitchDeck: null,
+                    financials: null,
+                    demo: null
+                }));
+
                 setFetching(false);
-            })
-            .catch(err => {
-                console.error(err);
+            } catch (error) {
+                console.error(error);
                 setFetching(false);
-            });
+            }
+        };
+
+        loadData();
     }, [id]);
 
     const handleChange = (e: any) => {
@@ -132,6 +157,26 @@ export default function UpdatePitch() {
     return (
         <div className="max-w-3xl mx-auto py-8">
             <h1 className="text-3xl font-extrabold text-[#0B2C4A] mb-8">Update Pitch</h1>
+
+            {hasPendingUpdate && (
+                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-8 rounded-r-lg shadow-sm">
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-amber-700 font-bold">
+                                Pending Update Request
+                            </p>
+                            <p className="text-sm text-amber-700 mt-1">
+                                You have submitted changes for this pitch that are awaiting admin approval. The form below shows your <strong>pending changes</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                 <div className="mb-8">
@@ -223,7 +268,7 @@ export default function UpdatePitch() {
                             <Input label="Founder Role" name="founderRole" value={formData.founderRole} onChange={handleChange} />
                             <Input label="Experience (Years)" type="number" name="founderExpYears" value={formData.founderExpYears} onChange={handleChange} />
                             <Input label="Team Size" type="number" name="teamSize" value={formData.teamSize} onChange={handleChange} />
-                            <Input label="LinkedIn URL" name="linkedinUrl" value={formData.linkedinUrl} onChange={handleChange} />
+                            <Input label="Website URL" name="websiteUrl" value={formData.websiteUrl} onChange={handleChange} />
                         </div>
                     )}
                     {step === 8 && (

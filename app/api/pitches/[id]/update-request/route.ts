@@ -19,6 +19,22 @@ async function verifyAuth(req: Request) {
     }
 }
 
+export async function GET(req: Request, context: any) {
+    try {
+        await dbConnect();
+        const { params } = context;
+        const user = await verifyAuth(req);
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const { id } = await params;
+        const pendingUpdate = await PitchUpdate.findOne({ pitch: id, status: 'pending' });
+
+        return NextResponse.json({ pendingUpdate });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
 export async function POST(req: Request, context: any) {
     try {
         await dbConnect();
@@ -66,7 +82,7 @@ export async function POST(req: Request, context: any) {
             'problemStatement', 'targetCustomer', 'solution', 'uniqueSellingPoint',
             'offeringType', 'productStatus',
             'marketType', 'revenueModel', 'pricingModel',
-            'founderName', 'founderRole', 'linkedinUrl',
+            'founderName', 'founderRole', 'websiteUrl',
             'fundingType', 'useOfFunds'
         ];
 
@@ -77,11 +93,15 @@ export async function POST(req: Request, context: any) {
 
         const boolFields = ['hasExistingCustomers'];
 
+
         // Process simple fields
         for (const field of simpleFields) {
             if (formData.has(field)) updateData[field] = formData.get(field);
             else updateData[field] = currentPitch[field];
         }
+
+        console.log('DEBUG: formData keys:', Array.from(formData.keys()));
+        console.log('DEBUG: updateData.websiteUrl:', updateData.websiteUrl);
 
         // Process number fields
         for (const field of numberFields) {

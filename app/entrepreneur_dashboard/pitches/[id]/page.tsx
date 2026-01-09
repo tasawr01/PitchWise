@@ -27,10 +27,27 @@ async function getPitch(id: string) {
     }
 }
 
+async function getPendingUpdate(pitchId: string) {
+    await dbConnect();
+    // Import PitchUpdate model dynamically if needed to avoid circular deps, or just rely on global model registration
+    const PitchUpdate = await import('@/models/PitchUpdate').then(mod => mod.default);
+
+    const update = await PitchUpdate.findOne({ pitch: pitchId, status: 'pending' }).select('websiteUrl businessName title');
+    if (!update) return null;
+    return JSON.parse(JSON.stringify(update));
+}
+
+const ensureAbsoluteUrl = (url: string) => {
+    if (!url) return '#';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+};
+
 export default async function PitchDetailsPage({ params }: { params: { id: string } }) {
     // Await params as per Next.js 15+ requirements if applicable, but for now standard access
     const { id } = await params;
     const pitch = await getPitch(id);
+    const pendingUpdate = await getPendingUpdate(id);
 
     if (!pitch) {
         notFound();
@@ -58,6 +75,31 @@ export default async function PitchDetailsPage({ params }: { params: { id: strin
                     Update Pitch
                 </Link>
             </div>
+
+            {pendingUpdate && (
+                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-lg shadow-sm animate-fadeIn">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-amber-700 font-bold">
+                                    Pending Approval
+                                </p>
+                                <p className="text-sm text-amber-700">
+                                    You have submitted changes that are waiting for admin review. Pending values are shown below.
+                                </p>
+                            </div>
+                        </div>
+                        <Link href={`/entrepreneur_dashboard/pitches/update/${pitch._id}`} className="text-sm font-semibold text-amber-700 hover:text-amber-800 underline">
+                            View Request
+                        </Link>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 {/* Header Image */}
@@ -266,11 +308,24 @@ export default async function PitchDetailsPage({ params }: { params: { id: strin
                                         <p className="text-xs text-gray-400 mt-1">{pitch.founderExpYears} years exp.</p>
                                     </div>
                                 </div>
-                                {pitch.linkedinUrl && (
-                                    <a href={pitch.linkedinUrl} target="_blank" rel="noopener noreferrer" className="mt-4 block text-center w-full py-2 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-100 transition-colors">
-                                        LinkedIn Profile
-                                    </a>
-                                )}
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Website Profile</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-medium text-gray-900">
+                                            {pitch.websiteUrl ? (
+                                                <a href={ensureAbsoluteUrl(pitch.websiteUrl)} target="_blank" className="text-blue-600 hover:underline">View Website</a>
+                                            ) : (pendingUpdate?.websiteUrl ? (
+                                                <span className="text-gray-400 italic">No live link</span>
+                                            ) : 'N/A')}
+                                        </p>
+                                        {pendingUpdate?.websiteUrl && pendingUpdate.websiteUrl !== pitch.websiteUrl && (
+                                            <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-xs">
+                                                <span className="font-bold text-amber-700">Pending:</span>
+                                                <a href={ensureAbsoluteUrl(pendingUpdate.websiteUrl)} target="_blank" className="text-blue-600 hover:underline truncate max-w-[150px]">{pendingUpdate.websiteUrl}</a>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Documents */}
