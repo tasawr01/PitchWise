@@ -9,6 +9,13 @@ export default function AdminUsers() {
     const [selectedUser, setSelectedUser] = useState<any>(null); // For Review Modal
     const [loading, setLoading] = useState(true);
 
+    const [stats, setStats] = useState({ approved: 0, pending: 0, docRequests: 0 });
+
+    useEffect(() => {
+        // Initial fetch for stats
+        fetchStats();
+    }, []);
+
     useEffect(() => {
         if (activeTab === 'doc-requests') {
             fetchDocRequests();
@@ -16,6 +23,26 @@ export default function AdminUsers() {
             fetchUsers();
         }
     }, [activeTab]);
+
+    const fetchStats = async () => {
+        try {
+            // Fetch all users to count statuses
+            const usersRes = await fetch('/api/admin/users-list'); // Fetches all by default
+            const docsRes = await fetch('/api/admin/document-updates'); // Fetches pending docs
+
+            const usersData = await usersRes.json();
+            const docsData = await docsRes.json();
+
+            const allUsers = usersData.users || [];
+            const approvedCount = allUsers.filter((u: any) => u.status === 'approved').length;
+            const pendingCount = allUsers.filter((u: any) => u.status === 'pending').length;
+            const docsCount = docsData.updates?.length || 0;
+
+            setStats({ approved: approvedCount, pending: pendingCount, docRequests: docsCount });
+        } catch (error) {
+            console.error('Failed to fetch stats', error);
+        }
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -49,6 +76,7 @@ export default function AdminUsers() {
             if (res.ok) {
                 alert('User deleted successfully');
                 fetchUsers();
+                fetchStats();
             } else {
                 alert('Failed to delete user');
             }
@@ -71,6 +99,7 @@ export default function AdminUsers() {
                 alert(`User ${status} successfully`);
                 setSelectedUser(null); // Close modal if open
                 fetchUsers();
+                fetchStats();
             } else {
                 alert('Failed to update user status');
             }
@@ -92,6 +121,7 @@ export default function AdminUsers() {
             if (res.ok) {
                 alert(`Request ${action} successfully`);
                 fetchDocRequests();
+                fetchStats();
             } else {
                 alert('Failed to process request');
             }
@@ -185,18 +215,6 @@ export default function AdminUsers() {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Extra Info based on Role */}
-                            {user.role === 'entrepreneur' && (
-                                <>
-                                    <hr />
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2">Startup Info</h4>
-                                        <p className="text-sm"><span className="text-gray-500">Startup Name:</span> {user.startupName}</p>
-                                        <p className="text-sm"><span className="text-gray-500">Category:</span> {user.startupCategory}</p>
-                                    </div>
-                                </>
-                            )}
                         </div>
 
                         {/* Actions Footer */}
@@ -228,21 +246,30 @@ export default function AdminUsers() {
             <div className="flex gap-4 border-b border-gray-200">
                 <button
                     onClick={() => setActiveTab('approved')}
-                    className={`pb-2 px-1 ${activeTab === 'approved' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`pb-2 px-1 flex items-center gap-2 ${activeTab === 'approved' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     All Users
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'approved' ? 'bg-[#0B2C4A] text-white' : 'bg-gray-100 text-gray-600'}`}>
+                        {stats.approved}
+                    </span>
                 </button>
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`pb-2 px-1 ${activeTab === 'pending' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`pb-2 px-1 flex items-center gap-2 ${activeTab === 'pending' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Pending Approval
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'pending' ? 'bg-[#0B2C4A] text-white' : 'bg-gray-100 text-gray-600'}`}>
+                        {stats.pending}
+                    </span>
                 </button>
                 <button
                     onClick={() => setActiveTab('doc-requests')}
-                    className={`pb-2 px-1 ${activeTab === 'doc-requests' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`pb-2 px-1 flex items-center gap-2 ${activeTab === 'doc-requests' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Doc Update Requests
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'doc-requests' ? 'bg-[#0B2C4A] text-white' : 'bg-gray-100 text-gray-600'}`}>
+                        {stats.docRequests}
+                    </span>
                 </button>
             </div>
 
@@ -325,8 +352,13 @@ export default function AdminUsers() {
                                                 {user.role}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {user.status}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${user.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                                    user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-red-100 text-red-800'
+                                                }`}>
+                                                {user.status}
+                                            </span>
                                         </td>
                                         {activeTab === 'pending' && (
                                             <td className="px-6 py-4 whitespace-nowrap text-center">

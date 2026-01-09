@@ -48,11 +48,10 @@ export default function EntrepreneurSidebar({ isOpen, onClose }: SidebarProps) {
             ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 <div className="p-6 border-b border-gray-700 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                        <div className="relative w-8 h-8">
+                    <div className="flex items-center justify-center w-full">
+                        <div className="relative w-36 h-12">
                             <Image src="/assets/footerlogo.png" alt="PitchWise" fill className="object-contain invert brightness-0 saturate-100 invert" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight">PITCHWISE</span>
                     </div>
                     {/* Close Button Mobile */}
                     <button onClick={onClose} className="md:hidden text-gray-400 hover:text-white">
@@ -69,8 +68,8 @@ export default function EntrepreneurSidebar({ isOpen, onClose }: SidebarProps) {
                                 href={item.href}
                                 onClick={() => onClose()}
                                 className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                                     }`}
                             >
                                 <span className={`mr-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-white'}`}>

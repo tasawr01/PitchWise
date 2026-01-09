@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Spinner from '@/components/Spinner';
 
 type Role = 'entrepreneur' | 'investor' | '';
 type DocumentType = 'cnic' | 'passport' | '';
@@ -1028,9 +1029,17 @@ export default function Signup() {
                                 ) : (
                                     <button
                                         type="submit"
-                                        className="flex-1 rounded-md border border-transparent bg-[#0B2C4A] py-2.5 px-4 text-sm font-bold text-white shadow-sm hover:bg-[#0B2C4A]/90 focus:outline-none focus:ring-2 focus:ring-[#0B2C4A] focus:ring-offset-2 transition-all transform hover:-translate-y-0.5"
+                                        disabled={isSubmitting}
+                                        className="flex-1 rounded-md border border-transparent bg-[#0B2C4A] py-2.5 px-4 text-sm font-bold text-white shadow-sm hover:bg-[#0B2C4A]/90 focus:outline-none focus:ring-2 focus:ring-[#0B2C4A] focus:ring-offset-2 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                                     >
-                                        Create Account
+                                        {isSubmitting ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Spinner className="w-4 h-4 text-white" />
+                                                <span>Creating Account...</span>
+                                            </div>
+                                        ) : (
+                                            'Create Account'
+                                        )}
                                     </button>
                                 )}
                             </div>

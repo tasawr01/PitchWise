@@ -47,11 +47,10 @@ export default function AdminSidebar({ isOpen, onClose }: { isOpen?: boolean; on
             ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 <div className="p-6 border-b border-gray-700 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                        <div className="relative w-8 h-8">
-                            <Image src="/assets/footerlogo.png" alt="PitchWise" fill className="object-contain invert brightness-0 saturate-100 invert" sizes="32px" />
+                    <div className="flex items-center justify-center w-full">
+                        <div className="relative w-36 h-12">
+                            <Image src="/assets/footerlogo.png" alt="PitchWise" fill className="object-contain invert brightness-0 saturate-100 invert" sizes="(max-width: 768px) 100vw, 144px" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight">ADMIN</span>
                     </div>
                     {/* Close Button Mobile */}
                     <button onClick={onClose} className="md:hidden text-gray-400 hover:text-white">
