@@ -50,7 +50,7 @@ export default function EntrepreneurSidebar({ isOpen, onClose }: SidebarProps) {
                 <div className="p-6 border-b border-gray-700 flex items-center justify-between gap-3">
                     <div className="flex items-center justify-center w-full">
                         <div className="relative w-36 h-12">
-                            <Image src="/assets/footerlogo.png" alt="PitchWise" fill className="object-contain invert brightness-0 saturate-100 invert" />
+                            <Image src="/assets/footerlogo.png" alt="PitchWise" fill className="object-contain invert brightness-0 saturate-100 invert" sizes="(max-width: 768px) 100vw, 144px" priority />
                         </div>
                     </div>
                     {/* Close Button Mobile */}

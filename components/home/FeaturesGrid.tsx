@@ -71,6 +71,7 @@ export default function FeaturesGrid() {
                                     alt={feature.name}
                                     fill
                                     className="object-contain"
+                                    sizes="64px"
                                 />
                             </div>
                             <h3 className="text-lg font-bold text-primary mb-3">{feature.name}</h3>

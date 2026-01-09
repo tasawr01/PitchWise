@@ -118,7 +118,7 @@ export default function EntrepreneurProfile() {
                                         <span className="text-sm font-medium text-gray-700">Front Side</span>
                                         <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
                                             {user.cnicFront ? (
-                                                <Image src={user.cnicFront} alt="CNIC Front" fill className="object-cover" />
+                                                <Image src={user.cnicFront} alt="CNIC Front" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full text-gray-400 text-sm">No Image</div>
                                             )}
@@ -128,7 +128,7 @@ export default function EntrepreneurProfile() {
                                         <span className="text-sm font-medium text-gray-700">Back Side</span>
                                         <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
                                             {user.cnicBack ? (
-                                                <Image src={user.cnicBack} alt="CNIC Back" fill className="object-cover" />
+                                                <Image src={user.cnicBack} alt="CNIC Back" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full text-gray-400 text-sm">No Image</div>
                                             )}
@@ -153,7 +153,7 @@ export default function EntrepreneurProfile() {
                                     <span className="text-sm font-medium text-gray-700">Passport Scan</span>
                                     <div className="relative aspect-[3/2] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 max-w-md">
                                         {user.passportScan ? (
-                                            <Image src={user.passportScan} alt="Passport Scan" fill className="object-cover" />
+                                            <Image src={user.passportScan} alt="Passport Scan" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-gray-400 text-sm">No Image</div>
                                         )}

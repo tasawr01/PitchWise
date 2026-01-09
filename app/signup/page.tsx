@@ -459,6 +459,8 @@ export default function Signup() {
                                     alt="PitchWise Logo"
                                     fill
                                     className="object-contain"
+                                    sizes="64px"
+                                    priority
                                 />
                             </div>
                         </Link>

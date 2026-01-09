@@ -17,6 +17,7 @@ export default function Footer() {
                                     alt="PitchWise Logo"
                                     fill
                                     className="object-contain"
+                                    sizes="80px"
                                 />
                             </div>
                         </Link>

@@ -22,7 +22,7 @@ export default function DashboardNavbar({ title, profilePhoto }: NavbarProps) {
         <nav className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
             <div className="flex items-center gap-2">
                 <div className="relative w-10 h-10">
-                    <Image src="/assets/footerlogo.png" alt="Logo" fill className="object-contain" sizes="40px" />
+                    <Image src="/assets/footerlogo.png" alt="Logo" fill className="object-contain" sizes="40px" priority />
                 </div>
                 <span className="font-bold text-xl text-[#0B2C4A]">{title}</span>
             </div>

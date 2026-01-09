@@ -27,6 +27,8 @@ export default function Header() {
                                 alt="PitchWise Logo"
                                 fill
                                 className="object-contain"
+                                sizes="96px"
+                                priority
                             />
                         </div>
                     </Link>
@@ -81,6 +83,8 @@ export default function Header() {
                                         alt="PitchWise Logo"
                                         fill
                                         className="object-contain"
+                                        sizes="32px"
+                                        priority
                                     />
                                 </div>
                             </Link>

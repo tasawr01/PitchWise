@@ -55,6 +55,8 @@ export default function AdminLogin() {
                                     alt="PitchWise Logo"
                                     fill
                                     className="object-contain"
+                                    sizes="64px"
+                                    priority
                                 />
                             </div>
                         </Link>
