@@ -19,9 +19,10 @@ async function verifyAuth(req: Request) {
     }
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: Request, context: any) {
     try {
         await dbConnect();
+        const { params } = context;
         const user = await verifyAuth(req);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
