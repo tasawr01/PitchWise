@@ -11,6 +11,18 @@ export default function PitchManagement() {
 
     const [selectedPitch, setSelectedPitch] = useState<any>(null); // For Review Modal
     const [selectedRequest, setSelectedRequest] = useState<any>(null); // For Update Request Modal
+    const [stats, setStats] = useState({ total: 0, pending: 0, updates: 0 });
+
+    useEffect(() => {
+        fetch('/api/admin/pitches/stats')
+            .then(res => res.json())
+            .then(data => {
+                if (data.stats) setStats(data.stats);
+            })
+            .catch(err => console.error('Failed to load stats', err));
+    }, [pitches, requests]);
+
+
 
     useEffect(() => {
         setLoading(true);
@@ -44,6 +56,11 @@ export default function PitchManagement() {
             if (res.ok) {
                 alert(`Pitch ${status}`);
                 setPitches(prev => prev.filter(p => p._id !== pitchId));
+                setStats(prev => ({
+                    ...prev,
+                    total: prev.total, // Filtering by status is complex for total, but pending drops
+                    pending: prev.pending - 1
+                }));
                 setSelectedPitch(null); // Close modal
             }
         } catch (error) {
@@ -57,6 +74,7 @@ export default function PitchManagement() {
             const res = await fetch(`/api/pitches/${pitchId}`, { method: 'DELETE' });
             if (res.ok) {
                 setPitches(prev => prev.filter(p => p._id !== pitchId));
+                setStats(prev => ({ ...prev, total: prev.total - 1 }));
             } else {
                 alert('Failed to delete pitch');
             }
@@ -77,6 +95,7 @@ export default function PitchManagement() {
             if (res.ok) {
                 alert(`Update request ${action}`);
                 setRequests(prev => prev.filter(r => r._id !== requestId));
+                setStats(prev => ({ ...prev, updates: prev.updates - 1 }));
                 setSelectedRequest(null);
             } else {
                 alert('Failed to process request');
@@ -86,6 +105,36 @@ export default function PitchManagement() {
             alert('An error occurred');
         }
     };
+
+    // Pitch Review Modal Component
+    // ... (rest of component)
+    // Keeping Modal logic same, skipping its re-definition which is lines 91-285. 
+    // Wait, the block I am replacing includes line 91 onwards if I copy-paste too much.
+    // I need to be careful.
+    // I will replace separate chunks to avoid issues.
+
+    // Chunk 1: State & Effect
+    // Start line 15 to 88. 
+    // Actually, I can replacing lines 18-33 (useEffect) and insert the new state above it.
+    // And replace handler functions separately or just the whole top block.
+    // The previous attempt failed because of mismatches.
+    // I will try to replace specific function blocks.
+
+    // Instead of one huge block, I will just add the state and stats fetch useEffect.
+    // And then modify the JSX return separately.
+
+    // But wait, the previous tool call failure might have been due to line mismatches in a large block?
+    // Let's retry with smaller blocks.
+
+    // Actually, I'll replace the JSX lines for the Tabs first, as that's what the user *sees*. 
+    // Wait, I need the stats state first.
+
+
+
+
+
+
+
 
     // Pitch Review Modal Component
     const PitchReviewModal = ({ pitch, onClose, isUpdate = false, onAction }: { pitch: any, onClose: () => void, isUpdate?: boolean, onAction?: (action: 'approved' | 'rejected') => void }) => {
@@ -295,19 +344,22 @@ export default function PitchManagement() {
                     onClick={() => setActiveTab('all')}
                     className={`pb-2 px-1 ${activeTab === 'all' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                    All Pitches
+                    All Pitches <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs ml-1">{stats.total}</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('pending')}
                     className={`pb-2 px-1 ${activeTab === 'pending' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                    Pending Approvals
+                    Pending Approvals <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs ml-1">{stats.pending}</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('updates')}
                     className={`pb-2 px-1 ${activeTab === 'updates' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                    Update Requests {activeTab !== 'updates' && requests.length > 0 && <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs ml-1">!</span>}
+                    Update Requests
+                    <span className={`px-2 py-0.5 rounded-full text-xs ml-1 ${stats.updates > 0 ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
+                        {stats.updates}
+                    </span>
                 </button>
             </div>
 
