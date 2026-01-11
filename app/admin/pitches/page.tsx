@@ -11,6 +11,7 @@ export default function PitchManagement() {
 
     const [selectedPitch, setSelectedPitch] = useState<any>(null); // For Review Modal
     const [selectedRequest, setSelectedRequest] = useState<any>(null); // For Update Request Modal
+    const [viewingDoc, setViewingDoc] = useState<{ url: string, title: string } | null>(null); // For PDF Modal
     const [stats, setStats] = useState({ total: 0, pending: 0, updates: 0 });
 
     useEffect(() => {
@@ -137,7 +138,7 @@ export default function PitchManagement() {
 
 
     // Pitch Review Modal Component
-    const PitchReviewModal = ({ pitch, onClose, isUpdate = false, onAction }: { pitch: any, onClose: () => void, isUpdate?: boolean, onAction?: (action: 'approved' | 'rejected') => void }) => {
+    const PitchReviewModal = ({ pitch, onClose, isUpdate = false, onAction, onViewDocument }: { pitch: any, onClose: () => void, isUpdate?: boolean, onAction?: (action: 'approved' | 'rejected') => void, onViewDocument: (doc: { url: string, title: string }) => void }) => {
         if (!pitch) return null;
 
         // Helper to check difference
@@ -177,7 +178,7 @@ export default function PitchManagement() {
 
         return (
             <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto transition-all duration-300">
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/20">
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/20 relative">
                     <div className="p-6">
                         {isUpdate && (
                             <div className="mb-4 bg-blue-50 border border-blue-200 p-3 rounded-lg flex items-center gap-2 text-blue-800">
@@ -278,24 +279,40 @@ export default function PitchManagement() {
                             {/* Section 7: Documents */}
                             <div>
                                 <h4 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">7. Attachments</h4>
-                                <div className="flex flex-wrap gap-4">
+                                <div className="space-y-4">
                                     {pitch.pitchDeckUrl && (
-                                        <div className={`flex items-center gap-2 px-4 py-3 bg-white border rounded-lg shadow-sm transition ${isChanged('pitchDeckUrl') ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`}>
-                                            <a href={pitch.pitchDeckUrl} target="_blank" className="flex items-center gap-2 text-blue-600 hover:underline">
-                                                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" /><path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" /></svg>
-                                                <span className="font-medium text-sm">Pitch Deck</span>
-                                            </a>
-                                            {isChanged('pitchDeckUrl') && <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded ml-2">UPDATED</span>}
-                                        </div>
+                                        <button
+                                            onClick={() => onViewDocument({ url: pitch.pitchDeckUrl, title: 'Pitch Deck' })}
+                                            className={`w-full flex items-center p-3 rounded-lg border hover:bg-gray-50 transition-colors group text-left ${isChanged('pitchDeckUrl') ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}
+                                        >
+                                            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 mr-3 group-hover:scale-110 transition-transform">
+                                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-semibold text-gray-900 text-sm truncate">Pitch Deck</p>
+                                                    {isChanged('pitchDeckUrl') && <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">UPDATED</span>}
+                                                </div>
+                                                <p className="text-xs text-gray-500">PDF Document • Click to Preview</p>
+                                            </div>
+                                        </button>
                                     )}
                                     {pitch.financialsUrl && (
-                                        <div className={`flex items-center gap-2 px-4 py-3 bg-white border rounded-lg shadow-sm transition ${isChanged('financialsUrl') ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`}>
-                                            <a href={pitch.financialsUrl} target="_blank" className="flex items-center gap-2 text-green-600 hover:underline">
-                                                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>
-                                                <span className="font-medium text-sm">Financials</span>
-                                            </a>
-                                            {isChanged('financialsUrl') && <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded ml-2">UPDATED</span>}
-                                        </div>
+                                        <button
+                                            onClick={() => onViewDocument({ url: pitch.financialsUrl, title: 'Financials' })}
+                                            className={`w-full flex items-center p-3 rounded-lg border hover:bg-gray-50 transition-colors group text-left ${isChanged('financialsUrl') ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}
+                                        >
+                                            <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-500 mr-3 group-hover:scale-110 transition-transform">
+                                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-semibold text-gray-900 text-sm truncate">Financials</p>
+                                                    {isChanged('financialsUrl') && <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">UPDATED</span>}
+                                                </div>
+                                                <p className="text-xs text-gray-500">PDF Document • Click to Preview</p>
+                                            </div>
+                                        </button>
                                     )}
                                     {pitch.demoUrl && (
                                         <div className={`flex items-center gap-2 px-4 py-3 bg-white border rounded-lg shadow-sm transition ${isChanged('demoUrl') ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`}>
@@ -432,15 +449,23 @@ export default function PitchManagement() {
                                             </span>
                                         </div>
                                         <div className="pt-2 flex gap-3">
-                                            <a href={pitch.pitchDeckUrl} target="_blank" className="text-[#0B2C4A] text-xs font-semibold hover:underline flex items-center">
-                                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" /></svg>
-                                                View Pitch Deck
-                                            </a>
+                                            {pitch.pitchDeckUrl && (
+                                                <button
+                                                    onClick={() => setViewingDoc({ url: pitch.pitchDeckUrl, title: 'Pitch Deck' })}
+                                                    className="text-[#0B2C4A] text-xs font-semibold hover:underline flex items-center"
+                                                >
+                                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" /></svg>
+                                                    View Pitch Deck
+                                                </button>
+                                            )}
                                             {pitch.financialsUrl && (
-                                                <a href={pitch.financialsUrl} target="_blank" className="text-[#0B2C4A] text-xs font-semibold hover:underline flex items-center">
+                                                <button
+                                                    onClick={() => setViewingDoc({ url: pitch.financialsUrl, title: 'Financials' })}
+                                                    className="text-[#0B2C4A] text-xs font-semibold hover:underline flex items-center"
+                                                >
                                                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" /></svg>
                                                     View Financials
-                                                </a>
+                                                </button>
                                             )}
                                         </div>
                                     </div>
@@ -490,6 +515,7 @@ export default function PitchManagement() {
                 <PitchReviewModal
                     pitch={selectedPitch}
                     onClose={() => setSelectedPitch(null)}
+                    onViewDocument={setViewingDoc}
                 />
             )}
 
@@ -500,7 +526,55 @@ export default function PitchManagement() {
                     onClose={() => setSelectedRequest(null)}
                     isUpdate={true}
                     onAction={(action) => handleUpdateAction(selectedRequest._id, action)}
+                    onViewDocument={setViewingDoc}
                 />
+            )}
+
+            {/* PDF Viewing Modal (Separate from Pitch Modal) */}
+            {viewingDoc && (
+                <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-full max-h-[95vh] flex flex-col overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <div>
+                                <h3 className="text-xl font-bold text-[#0B2C4A]">{viewingDoc.title}</h3>
+                                <a href={viewingDoc.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline flex items-center gap-1 mt-0.5">
+                                    Open in new tab
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                </a>
+                            </div>
+                            <button
+                                onClick={() => setViewingDoc(null)}
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-600 hover:bg-red-100 hover:text-red-500 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Modal Content - Iframe */}
+                        <div className="flex-1 bg-gray-100 relative">
+                            <iframe
+                                src={`${viewingDoc.url}#toolbar=0`}
+                                className="w-full h-full border-0"
+                                title={viewingDoc.title}
+                            >
+                                <div className="flex items-center justify-center h-full flex-col p-8 text-center text-gray-500">
+                                    <p className="mb-2">Your browser does not support inline PDF viewing.</p>
+                                    <a
+                                        href={viewingDoc.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-4 py-2 bg-[#0B2C4A] text-white rounded-lg hover:bg-[#09223a] transition-colors"
+                                    >
+                                        Download PDF
+                                    </a>
+                                </div>
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

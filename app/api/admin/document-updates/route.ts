@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import DocumentUpdate from '@/models/DocumentUpdate';
 import Entrepreneur from '@/models/Entrepreneur';
 import { jwtVerify } from 'jose';
+import { deleteFromCloudinary } from '@/lib/cloudinary';
 
 async function verifyAdmin(req: Request) {
     const token = req.headers.get('cookie')?.match(/token=([^;]+)/)?.[1];
@@ -59,6 +60,17 @@ export async function PUT(req: Request) {
         // Update Entrepreneur Profile
         const entrepreneur = await Entrepreneur.findById(updateRequest.entrepreneur);
         if (entrepreneur) {
+            // Delete old files if replacing
+            if (updateRequest.cnicFront && entrepreneur.cnicFront && updateRequest.cnicFront !== entrepreneur.cnicFront) {
+                await deleteFromCloudinary(entrepreneur.cnicFront);
+            }
+            if (updateRequest.cnicBack && entrepreneur.cnicBack && updateRequest.cnicBack !== entrepreneur.cnicBack) {
+                await deleteFromCloudinary(entrepreneur.cnicBack);
+            }
+            if (updateRequest.passportScan && entrepreneur.passportScan && updateRequest.passportScan !== entrepreneur.passportScan) {
+                await deleteFromCloudinary(entrepreneur.passportScan);
+            }
+
             entrepreneur.documentType = updateRequest.documentType;
             if (updateRequest.documentType === 'cnic') {
                 entrepreneur.cnicNumber = updateRequest.cnicNumber;
@@ -86,6 +98,11 @@ export async function PUT(req: Request) {
 
             await entrepreneur.save();
         }
+    } else if (action === 'rejected') {
+        // Delete request files if rejected
+        if (updateRequest.cnicFront) await deleteFromCloudinary(updateRequest.cnicFront);
+        if (updateRequest.cnicBack) await deleteFromCloudinary(updateRequest.cnicBack);
+        if (updateRequest.passportScan) await deleteFromCloudinary(updateRequest.passportScan);
     }
 
     await updateRequest.save();

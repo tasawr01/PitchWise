@@ -5,6 +5,7 @@ import Link from 'next/link';
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
 import { jwtVerify } from 'jose';
+import PitchDocumentSection from '@/components/PitchDocumentSection';
 
 async function getPitch(id: string) {
     const cookieStore = await cookies();
@@ -329,31 +330,11 @@ export default async function PitchDetailsPage({ params }: { params: { id: strin
                             </div>
 
                             {/* Documents */}
-                            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                                <h3 className="text-md font-bold text-[#0B2C4A] mb-4">Documents</h3>
-                                <div className="space-y-3">
-                                    <a href={pitch.pitchDeckUrl} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors group">
-                                        <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 mr-3 group-hover:scale-110 transition-transform">
-                                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                                        </div>
-                                        <div className="overflow-hidden">
-                                            <p className="font-semibold text-gray-900 text-sm truncate">Pitch Deck</p>
-                                            <p className="text-xs text-gray-500">PDF Document</p>
-                                        </div>
-                                    </a>
-                                    {pitch.financialsUrl && (
-                                        <a href={pitch.financialsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors group">
-                                            <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-500 mr-3 group-hover:scale-110 transition-transform">
-                                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                            </div>
-                                            <div className="overflow-hidden">
-                                                <p className="font-semibold text-gray-900 text-sm truncate">Financials</p>
-                                                <p className="text-xs text-gray-500">PDF Document</p>
-                                            </div>
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
+                            <PitchDocumentSection
+                                pitchDeckUrl={pitch.pitchDeckUrl}
+                                financialsUrl={pitch.financialsUrl}
+                                demoUrl={pitch.demoUrl}
+                            />
                         </div>
                     </div>
                 </div>

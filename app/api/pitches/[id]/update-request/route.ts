@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
 import PitchUpdate from '@/models/PitchUpdate';
-import { uploadToCloudinary } from '@/lib/cloudinary';
+import { uploadToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
 import { notifyAdmins } from '@/lib/notification';
 
@@ -62,9 +62,31 @@ export async function POST(req: Request, context: any) {
         };
 
         // Upload Files or Use Existing
-        const pitchDeckUrl = (await uploadFile('pitchDeck', 'pitchwise/pitches/decks')) || currentPitch.pitchDeckUrl;
-        const financialsUrl = (await uploadFile('financials', 'pitchwise/pitches/financials')) || currentPitch.financialsUrl;
-        const demoUrl = (await uploadFile('demo', 'pitchwise/pitches/demos')) || currentPitch.demoUrl;
+        const newPitchDeckUrl = await uploadFile('pitchDeck', 'pitchwise/pitches/decks');
+        const newFinancialsUrl = await uploadFile('financials', 'pitchwise/pitches/financials');
+        const newDemoUrl = await uploadFile('demo', 'pitchwise/pitches/demos');
+
+        // Check for existing pending request to clean up its files if we are replacing them
+        const existingUpdate = await PitchUpdate.findOne({ pitch: id, status: 'pending' });
+
+        if (existingUpdate) {
+            // Delete old pending deck if we are uploading a new one AND the old one wasn't the live one
+            if (newPitchDeckUrl && existingUpdate.pitchDeckUrl && existingUpdate.pitchDeckUrl !== currentPitch.pitchDeckUrl) {
+                await deleteFromCloudinary(existingUpdate.pitchDeckUrl);
+            }
+            // Delete old pending financials
+            if (newFinancialsUrl && existingUpdate.financialsUrl && existingUpdate.financialsUrl !== currentPitch.financialsUrl) {
+                await deleteFromCloudinary(existingUpdate.financialsUrl);
+            }
+            // Delete old pending demo
+            if (newDemoUrl && existingUpdate.demoUrl && existingUpdate.demoUrl !== currentPitch.demoUrl) {
+                await deleteFromCloudinary(existingUpdate.demoUrl);
+            }
+        }
+
+        const pitchDeckUrl = newPitchDeckUrl || currentPitch.pitchDeckUrl;
+        const financialsUrl = newFinancialsUrl || currentPitch.financialsUrl;
+        const demoUrl = newDemoUrl || currentPitch.demoUrl;
 
         // Construct Data Object
         const updateData: any = {

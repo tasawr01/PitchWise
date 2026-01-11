@@ -5,6 +5,7 @@ import PitchUpdate from '@/models/PitchUpdate';
 import { jwtVerify } from 'jose';
 // Import notification helper
 import { createNotification } from '@/lib/notification';
+import { deleteFromCloudinary } from '@/lib/cloudinary';
 
 // Helper to verify admin
 async function verifyAdmin(req: Request) {
@@ -31,6 +32,21 @@ export async function POST(req: Request) {
         if (!updateRequest) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
 
         if (action === 'approved') {
+            const currentPitch = await Pitch.findById(updateRequest.pitch);
+
+            // Delete old files if they are being replaced
+            if (currentPitch) {
+                if (updateRequest.pitchDeckUrl && currentPitch.pitchDeckUrl && updateRequest.pitchDeckUrl !== currentPitch.pitchDeckUrl) {
+                    await deleteFromCloudinary(currentPitch.pitchDeckUrl);
+                }
+                if (updateRequest.financialsUrl && currentPitch.financialsUrl && updateRequest.financialsUrl !== currentPitch.financialsUrl) {
+                    await deleteFromCloudinary(currentPitch.financialsUrl);
+                }
+                if (updateRequest.demoUrl && currentPitch.demoUrl && updateRequest.demoUrl !== currentPitch.demoUrl) {
+                    await deleteFromCloudinary(currentPitch.demoUrl);
+                }
+            }
+
             // MERGE Logic
             // We want to copy almost all fields from updateRequest to Pitch
             // Excluding system fields: _id, pitch, entrepreneur, status, adminComment, createdAt, updatedAt
@@ -75,6 +91,11 @@ export async function POST(req: Request) {
             );
 
         } else if (action === 'rejected') {
+            // Delete the NEW files coming in the request since they are being rejected
+            if (updateRequest.pitchDeckUrl) await deleteFromCloudinary(updateRequest.pitchDeckUrl);
+            if (updateRequest.financialsUrl) await deleteFromCloudinary(updateRequest.financialsUrl);
+            if (updateRequest.demoUrl) await deleteFromCloudinary(updateRequest.demoUrl);
+
             updateRequest.status = 'rejected';
             await updateRequest.save();
 
