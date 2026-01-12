@@ -39,13 +39,13 @@ export default function Hero() {
                             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
                         >
                             <Link
-                                href="#"
+                                href="/signup?role=entrepreneur"
                                 className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-semibold text-primary hover:bg-secondary/80 transition-all"
                             >
                                 Start Fundraising
                             </Link>
                             <Link
-                                href="#"
+                                href="/signup?role=investor"
                                 className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-all"
                             >
                                 Find Startups

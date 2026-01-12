@@ -26,13 +26,13 @@ export default function JoinSection() {
 
                     <div className="flex flex-col items-center">
                         <h3 className="text-lg font-bold text-primary mb-6 uppercase tracking-wide">INVEST IN TOMORROW</h3>
-                        <Link href="#" className="bg-primary text-white px-10 py-4 rounded-md font-semibold hover:bg-primary/90 transition-colors w-full max-w-xs shadow-lg">
+                        <Link href="/signup?role=investor" className="bg-primary text-white px-10 py-4 rounded-md font-semibold hover:bg-primary/90 transition-colors w-full max-w-xs shadow-lg">
                             Join As Investor
                         </Link>
                     </div>
                     <div className="flex flex-col items-center">
                         <h3 className="text-lg font-bold text-primary mb-6 uppercase tracking-wide">LET'S FUEL YOUR VISION</h3>
-                        <Link href="#" className="bg-primary text-white px-10 py-4 rounded-md font-semibold hover:bg-primary/90 transition-colors w-full max-w-xs shadow-lg">
+                        <Link href="/signup?role=entrepreneur" className="bg-primary text-white px-10 py-4 rounded-md font-semibold hover:bg-primary/90 transition-colors w-full max-w-xs shadow-lg">
                             Join As Founder
                         </Link>
                     </div>

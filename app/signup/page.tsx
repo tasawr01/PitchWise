@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import Spinner from '@/components/Spinner';
 
 type Role = 'entrepreneur' | 'investor' | '';
@@ -226,6 +227,15 @@ export default function Signup() {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const role = searchParams.get('role');
+        if (role && (role === 'entrepreneur' || role === 'investor')) {
+            updateFormData('role', role);
+        }
+    }, [searchParams]);
+
     useEffect(() => {
         if (formData.profilePhoto) {
             const objectUrl = URL.createObjectURL(formData.profilePhoto);
@@ -274,15 +284,27 @@ export default function Signup() {
             }
         }
 
-        if (!formData.password) newErrors.password = 'Password is required';
-        else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
-        else {
-            // Password should not contain any part of the name
-            const nameParts = formData.fullName.toLowerCase().split(/\s+/).filter(part => part.length > 2);
-            const passwordLower = formData.password.toLowerCase();
-            const containsNamePart = nameParts.some(part => passwordLower.includes(part));
-            if (containsNamePart) {
-                newErrors.password = 'Password should not contain your name';
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+        } else {
+            if (formData.password.length < 12 || formData.password.length > 16) {
+                newErrors.password = 'Password must be 12-16 characters long';
+            } else if (!/[A-Z]/.test(formData.password)) {
+                newErrors.password = 'Password must contain at least one uppercase letter';
+            } else if (!/[a-z]/.test(formData.password)) {
+                newErrors.password = 'Password must contain at least one lowercase letter';
+            } else if (!/\d/.test(formData.password)) {
+                newErrors.password = 'Password must contain at least one number';
+            } else if (!/[!@#$%^&*]/.test(formData.password)) {
+                newErrors.password = 'Password must contain at least one special character (!@#$%^&*)';
+            } else {
+                // Password should not contain any part of the name
+                const nameParts = formData.fullName.toLowerCase().split(/\s+/).filter(part => part.length > 2);
+                const passwordLower = formData.password.toLowerCase();
+                const containsNamePart = nameParts.some(part => passwordLower.includes(part));
+                if (containsNamePart) {
+                    newErrors.password = 'Password should not contain your name, username, or personal info';
+                }
             }
         }
 
@@ -320,7 +342,16 @@ export default function Signup() {
                 }
             }
 
-            if (!formData.expiryDate) newErrors.expiryDate = 'Expiry date is required';
+            if (!formData.expiryDate) {
+                newErrors.expiryDate = 'Expiry date is required';
+            } else {
+                const expiry = new Date(formData.expiryDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Reset time part for accurate date comparison
+                if (expiry < today) {
+                    newErrors.expiryDate = 'Passport has expired';
+                }
+            }
             if (!formData.passportScan) newErrors.passportScan = 'Passport scan is required';
         }
 
@@ -602,36 +633,44 @@ export default function Signup() {
                                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                                             Password *
                                         </label>
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            value={formData.password}
-                                            onChange={(e) => updateFormData('password', e.target.value)}
-                                            className={`block w-full rounded-md border ${errors.password ? 'border-red-500' : 'border-gray-300'} px-3 py-2.5 shadow-sm focus:border-[#0B2C4A] focus:outline-none focus:ring-[#0B2C4A] sm:text-sm transition-colors`}
-                                            placeholder="Create a password"
-                                        />
-                                        {formData.password && (
-                                            <div className="mt-1 flex items-center gap-1">
-                                                {[1, 2, 3, 4].map((level) => (
-                                                    <div
-                                                        key={level}
-                                                        className={`h-1 flex-1 rounded transition-all ${passwordStrength.strength >= level
-                                                            ? passwordStrength.strength === 1
-                                                                ? 'bg-red-500'
-                                                                : passwordStrength.strength === 2
-                                                                    ? 'bg-yellow-500'
-                                                                    : passwordStrength.strength === 3
-                                                                        ? 'bg-blue-500'
-                                                                        : 'bg-green-500'
-                                                            : 'bg-gray-200'
-                                                            }`}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                        {formData.password && (
-                                            <p className="text-xs mt-1 text-gray-500">{passwordStrength.label}</p>
-                                        )}
+                                        <div className="relative">
+                                            <input
+                                                id="password"
+                                                type="password"
+                                                value={formData.password}
+                                                onChange={(e) => updateFormData('password', e.target.value)}
+                                                className={`block w-full rounded-md border ${errors.password ? 'border-red-500' : 'border-gray-300'} px-3 py-2.5 shadow-sm focus:border-[#0B2C4A] focus:outline-none focus:ring-[#0B2C4A] sm:text-sm transition-colors`}
+                                                placeholder="Create a password"
+                                            />
+                                        </div>
+
+                                        {/* Password Rules Box */}
+                                        <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200 text-xs text-gray-600">
+                                            <p className="font-semibold mb-2 text-[#0B2C4A]">Password Requirements:</p>
+                                            <ul className="space-y-1">
+                                                <li className={`flex items-center gap-2 ${formData.password.length >= 12 && formData.password.length <= 16 ? 'text-green-600 font-medium' : ''}`}>
+                                                    <span className="w-4">{formData.password.length >= 12 && formData.password.length <= 16 ? '✓' : '•'}</span>
+                                                    Length: 12–16 characters
+                                                </li>
+                                                <li className={`flex items-center gap-2 ${/[A-Z]/.test(formData.password) ? 'text-green-600 font-medium' : ''}`}>
+                                                    <span className="w-4">{/[A-Z]/.test(formData.password) ? '✓' : '•'}</span>
+                                                    At least 1 uppercase letter (A–Z)
+                                                </li>
+                                                <li className={`flex items-center gap-2 ${/[a-z]/.test(formData.password) ? 'text-green-600 font-medium' : ''}`}>
+                                                    <span className="w-4">{/[a-z]/.test(formData.password) ? '✓' : '•'}</span>
+                                                    At least 1 lowercase letter (a–z)
+                                                </li>
+                                                <li className={`flex items-center gap-2 ${/\d/.test(formData.password) ? 'text-green-600 font-medium' : ''}`}>
+                                                    <span className="w-4">{/\d/.test(formData.password) ? '✓' : '•'}</span>
+                                                    At least 1 number (0–9)
+                                                </li>
+                                                <li className={`flex items-center gap-2 ${/[!@#$%^&*]/.test(formData.password) ? 'text-green-600 font-medium' : ''}`}>
+                                                    <span className="w-4">{/[!@#$%^&*]/.test(formData.password) ? '✓' : '•'}</span>
+                                                    At least 1 special character (!@#$%^&*)
+                                                </li>
+                                            </ul>
+                                        </div>
+
                                         {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                                     </div>
 
@@ -1089,23 +1128,38 @@ export default function Signup() {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-center animate-slideIn">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden relative flex flex-col items-center p-10 text-center animate-scaleIn border border-white/20">
+                        {/* Status Icon */}
+                        <div className="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6 relative">
+                            <div className="absolute inset-0 rounded-full border-4 border-yellow-100 animate-ping opacity-20"></div>
+                            <svg className="w-12 h-12 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-[#0B2C4A] mb-2">Registration Completed!</h3>
-                        <p className="text-gray-600 mb-6">
-                            Your account has been created successfully. Please wait for Admin Approval before logging in.
-                        </p>
-                        <Link
-                            href="/login"
-                            className="block w-full bg-[#0B2C4A] text-white font-semibold py-3 rounded-lg hover:bg-[#0B2C4A]/90 transition-colors"
-                        >
-                            OK, Go to Login
-                        </Link>
+
+                        <h3 className="text-3xl font-extrabold text-[#0B2C4A] mb-3 tracking-tight">Registration Received!</h3>
+
+                        <div className="space-y-4 mb-8">
+                            <p className="text-gray-600 text-lg leading-relaxed">
+                                Thank you for signing up. Your account is currently <span className="font-bold text-yellow-600">Pending Approval</span>.
+                            </p>
+                            <p className="text-sm text-gray-500 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                                Our Admin team reviews all new accounts to ensure the quality of our community. This usually takes <strong>1-24 hours</strong>. You will be notified via email once approved.
+                            </p>
+                        </div>
+
+                        <div className="w-full">
+                            <Link
+                                href="/login"
+                                className="block w-full py-4 bg-[#0B2C4A] text-white font-bold rounded-xl hover:bg-[#09223a] transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-lg"
+                            >
+                                Got it, Return to Login
+                            </Link>
+                            <p className="mt-4 text-xs text-gray-400">
+                                Need help? <a href="/contact" className="underline hover:text-gray-600">Contact Support</a>
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}

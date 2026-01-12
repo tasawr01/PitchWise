@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import EntrepreneurSidebar from '@/components/EntrepreneurSidebar';
 import LogoutButton from '@/components/LogoutButton';
 import NotificationBell from '@/components/NotificationBell';
 import Image from 'next/image';
+import WelcomeGuidanceModal from './WelcomeGuidanceModal';
 
 import Link from 'next/link';
 
@@ -18,6 +19,30 @@ interface LayoutProps {
 
 export default function EntrepreneurDashboardLayout({ children, user }: LayoutProps) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+    // Automatic welcome modal removed by user request
+    // useEffect(() => {
+    //     // Check if user has seen welcome modal
+    //     fetch('/api/entrepreneur/welcome', { cache: 'no-store' })
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             if (!data.hasSeenWelcome) {
+    //                 setShowWelcomeModal(true);
+    //             }
+    //         })
+    //         .catch(err => console.error('Failed to check welcome status', err));
+    // }, []);
+
+    const handleCloseWelcome = async () => {
+        setShowWelcomeModal(false);
+        // Update status so it doesn't show again automatically
+        try {
+            await fetch('/api/entrepreneur/welcome', { method: 'POST' });
+        } catch (err) {
+            console.error('Failed to update welcome status', err);
+        }
+    };
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -58,6 +83,14 @@ export default function EntrepreneurDashboardLayout({ children, user }: LayoutPr
                     </div>
 
                     <div className="flex items-center gap-2 sm:gap-4">
+                        {/* Guidance Button */}
+                        <button
+                            onClick={() => setShowWelcomeModal(true)}
+                            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-semibold"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Guidance
+                        </button>
                         {/* Chat Icon - Hidden on very small screens if needed, or keep */}
                         <button className="p-2 text-gray-400 hover:text-blue-600 transition relative hidden sm:block">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -85,6 +118,11 @@ export default function EntrepreneurDashboardLayout({ children, user }: LayoutPr
                 <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
                     {children}
                 </main>
+                {/* Welcome Modal */}
+                <WelcomeGuidanceModal
+                    isOpen={showWelcomeModal}
+                    onClose={handleCloseWelcome}
+                />
             </div>
         </div>
     );

@@ -1,11 +1,11 @@
 import { cookies } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
 import { jwtVerify } from 'jose';
-import PitchDocumentSection from '@/components/PitchDocumentSection';
+import { formatCurrency } from '@/lib/utils';
 
 async function getPitch(id: string) {
     const cookieStore = await cookies();
@@ -28,35 +28,46 @@ async function getPitch(id: string) {
     }
 }
 
-async function getPendingUpdate(pitchId: string) {
-    await dbConnect();
-    // Import PitchUpdate model dynamically if needed to avoid circular deps, or just rely on global model registration
-    const PitchUpdate = await import('@/models/PitchUpdate').then(mod => mod.default);
 
-    const update = await PitchUpdate.findOne({ pitch: pitchId, status: 'pending' }).select('websiteUrl businessName title');
-    if (!update) return null;
-    return JSON.parse(JSON.stringify(update));
-}
-
-const ensureAbsoluteUrl = (url: string) => {
-    if (!url) return '#';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://${url}`;
-};
 
 export default async function PitchDetailsPage({ params }: { params: { id: string } }) {
-    // Await params as per Next.js 15+ requirements if applicable, but for now standard access
     const { id } = await params;
     const pitch = await getPitch(id);
-    const pendingUpdate = await getPendingUpdate(id);
+
 
     if (!pitch) {
         notFound();
     }
 
+    // Helper to render a field if it exists
+    const Field = ({ label, value }: { label: string, value: any }) => {
+        // ALWAYS render for drafts, showing placeholder if empty.
+        // For submitted pitches, value should exist, but if not, showing "Not provided" or similar might be good.
+        // The user specifically asked for "show all fields questions but remains empty which are empty".
+
+        const displayValue = value ? value : <span className="text-gray-400 italic font-normal">Not Provided</span>;
+
+        return (
+            <div className="mb-4">
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{label}</h4>
+                <p className="text-gray-900 text-base whitespace-pre-wrap">{displayValue}</p>
+            </div>
+        );
+    };
+
+    const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
+        <section className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm mb-8">
+            <h3 className="text-xl font-bold text-[#0B2C4A] mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+                {title}
+            </h3>
+            {children}
+        </section>
+    );
+
     return (
-        <div className="max-w-5xl mx-auto pb-12">
-            <div className="mb-6 flex justify-between items-center">
+        <div className="max-w-5xl mx-auto pb-20">
+            {/* Header / Nav */}
+            <div className="mb-8 flex justify-between items-center">
                 <Link
                     href="/entrepreneur_dashboard/pitches"
                     className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#0B2C4A] transition-colors"
@@ -66,292 +77,263 @@ export default async function PitchDetailsPage({ params }: { params: { id: strin
                     </svg>
                     Back to My Pitches
                 </Link>
-                <Link
-                    href={`/entrepreneur_dashboard/pitches/update/${pitch._id}`}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0B2C4A] hover:bg-[#09223a] transition-all shadow-sm hover:shadow-md"
-                >
-                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Update Pitch
-                </Link>
+                {/* Edit Button for Drafts Only */}
+                {pitch.status === 'draft' && (
+                    <Link
+                        href={`/entrepreneur_dashboard/pitches/update/${pitch._id}`}
+                        className="px-5 py-2 bg-[#0B2C4A] text-white text-sm font-bold rounded-xl hover:bg-[#09223a] transition-all shadow-sm flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit Draft
+                    </Link>
+                )}
             </div>
 
-            {pendingUpdate && (
-                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-lg shadow-sm animate-fadeIn">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
+
+
+            {/* Rejection / Action Banner */}
+            {(pitch.status === 'rejected' || pitch.status === 'permanently_rejected') && (
+                <div className={`p-6 mb-8 rounded-xl shadow-md border-l-8 ${pitch.status === 'permanently_rejected' ? 'bg-red-50 border-red-600' : 'bg-amber-50 border-amber-500'}`}>
+                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                        <div className="flex-1">
+                            <h3 className={`text-lg font-bold mb-2 ${pitch.status === 'permanently_rejected' ? 'text-red-800' : 'text-amber-800'}`}>
+                                {pitch.status === 'permanently_rejected' ? '❌ Permanently Rejected' : '⚠️ Action Required: Pitch Rejected'}
+                            </h3>
+
+                            {/* Remarks Section */}
+                            <div className="bg-white/50 rounded-lg p-4 mb-3 border border-gray-100">
+                                <p className="text-xs font-bold text-gray-500 uppercase mb-1">Admin Remarks</p>
+                                <p className="text-gray-900 font-medium italic">"{pitch.remarks || 'No remarks provided.'}"</p>
                             </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-amber-700 font-bold">
-                                    Pending Approval
-                                </p>
-                                <p className="text-sm text-amber-700">
-                                    You have submitted changes that are waiting for admin review. Pending values are shown below.
-                                </p>
-                            </div>
+
+                            <p className="text-sm text-gray-600">
+                                {pitch.status === 'permanently_rejected'
+                                    ? "This pitch has reached the maximum number of attempts and cannot be updated anymore."
+                                    : "Please address the remarks above and resubmit your pitch. You have limited attempts remaining."
+                                }
+                            </p>
                         </div>
-                        <Link href={`/entrepreneur_dashboard/pitches/update/${pitch._id}`} className="text-sm font-semibold text-amber-700 hover:text-amber-800 underline">
-                            View Request
-                        </Link>
+
+                        {/* Status/Action Column */}
+                        <div className="flex flex-col items-end justify-center min-w-[200px] gap-3">
+                            <div className="text-right">
+                                <span className="block text-xs font-bold text-gray-500 uppercase">Attempts Used</span>
+                                <span className={`text-2xl font-black ${pitch.rejectionCount >= 3 ? 'text-red-600' : 'text-amber-600'}`}>
+                                    {pitch.rejectionCount || 0} <span className="text-sm text-gray-400 font-medium">/ 3</span>
+                                </span>
+                            </div>
+
+                            {(pitch.status === 'draft' || (pitch.status === 'rejected' && (pitch.rejectionCount || 0) < 3)) && (
+                                <Link
+                                    href={`/entrepreneur_dashboard/pitches/update/${pitch._id}`}
+                                    className={`px-6 py-3 rounded-xl font-bold text-white transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${pitch.status === 'draft' ? 'bg-[#0B2C4A] hover:bg-[#09223a]' : 'bg-amber-600 hover:bg-amber-700 animate-pulse'}`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    {pitch.status === 'draft' ? 'Resume Editing' : 'Fix & Resubmit'}
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
 
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                {/* Header Image */}
-                <div className="relative h-64 md:h-80 w-full bg-gray-100">
-                    {pitch.demoUrl ? (
-                        <Image
-                            src={pitch.demoUrl}
-                            alt={pitch.title}
-                            fill
-                            className="object-cover"
-                            priority
-                            sizes="100vw"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0B2C4A]/5 to-[#0B2C4A]/10 text-[#0B2C4A]/20">
-                            <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                    )}
-                    <div className="absolute top-6 right-6">
-                        <StatusBadge status={pitch.status} />
-                    </div>
+            {/* Hero Section */}
+            <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-gray-100 mb-10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6">
+                    <span className={`px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wide border ${pitch.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200' :
+                        pitch.status === 'rejected' ? 'bg-red-100 text-red-700 border-red-200' :
+                            'bg-yellow-100 text-yellow-700 border-yellow-200'
+                        }`}>
+                        {pitch.status}
+                    </span>
                 </div>
 
-                {/* Main Content */}
-                <div className="px-8 py-8">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-8 pb-8 border-b border-gray-100">
-                        <div>
-                            <h1 className="text-3xl md:text-4xl font-extrabold text-[#0B2C4A] mb-2 tracking-tight">{pitch.title}</h1>
-                            <p className="text-xl text-gray-500 font-medium">{pitch.businessName}</p>
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                    {/* Logo */}
+                    <div className="w-32 h-32 flex-shrink-0 bg-gray-50 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden relative">
+                        {pitch.logoUrl ? (
+                            <Image src={pitch.logoUrl} alt="Logo" fill className="object-cover" />
+                        ) : (
+                            <span className="text-gray-300 font-bold text-4xl">{pitch.businessName?.[0]}</span>
+                        )}
+                    </div>
+
+                    <div className="flex-1">
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-[#0B2C4A] tracking-tight mb-2">{pitch.businessName}</h1>
+                        <p className="text-xl text-gray-500 font-medium mb-6">{pitch.title}</p>
+
+                        <div className="flex flex-wrap gap-4">
+                            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
+                                <span className="block text-xs font-bold text-blue-800 uppercase">Industry</span>
+                                <span className="text-blue-900 font-semibold">{pitch.industry}</span>
+                            </div>
+                            <div className="bg-purple-50 px-4 py-2 rounded-lg border border-purple-100">
+                                <span className="block text-xs font-bold text-purple-800 uppercase">Stage</span>
+                                <span className="text-purple-900 font-semibold">{pitch.stage}</span>
+                            </div>
+                            <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-100">
+                                <span className="block text-xs font-bold text-green-800 uppercase">Seeking</span>
+                                <span className="text-green-900 font-semibold">Rs. {formatCurrency(pitch.amountRequired)}</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                            <span className="text-sm font-semibold text-gray-400 uppercase tracking-widest">Amount Required</span>
-                            <span className="text-3xl font-bold text-green-600">${pitch.amountRequired.toLocaleString()}</span>
-                            <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{pitch.fundingType}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Content (Left 2/3) */}
+                <div className="lg:col-span-2">
+
+                    <Section title="The Problem & Solution">
+                        <div className="grid grid-cols-1 gap-6">
+                            <Field label="Problem Statement" value={pitch.problemStatement} />
+                            <Field label="Urgency" value={pitch.problemUrgency} />
+                            <Field label="Target Customer" value={pitch.targetCustomer} />
+                            <div className="h-px bg-gray-100 my-2"></div>
+                            <Field label="Solution" value={pitch.solution} />
+                            <Field label="How it Works" value={pitch.solutionMechanism} />
+                            <Field label="Unique Selling Point" value={pitch.uniqueSellingPoint} />
+                        </div>
+                    </Section>
+
+                    <Section title="The Market">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Field label="Market Size & Location" value={pitch.marketSizeLocation} />
+                            <Field label="Market Growth" value={pitch.marketGrowth} />
+                            <div className="col-span-1 md:col-span-2">
+                                <Field label="Competitors" value={pitch.competitors} />
+                                <Field label="Current Alternatives" value={pitch.currentAlternatives} />
+                            </div>
+                        </div>
+                    </Section>
+
+                    <Section title="Business & Execution">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Field label="Revenue Model" value={pitch.revenueModel} />
+                            <Field label="Pricing Model" value={pitch.pricingModel} />
+                            <Field label="Rev/Customer" value={pitch.revenuePerCustomer} />
+                        </div>
+                        <div className="mt-6">
+                            <Field label="Traction / Validation" value={pitch.traction} />
+                            <Field label="Customer Validation" value={pitch.customerValidation} />
+                        </div>
+                        <div className="mt-6">
+                            <Field label="Key Technology" value={pitch.keyTechnology} />
+                            <Field label="Moat (Defensibility)" value={pitch.moat} />
+                            <Field label="Risks" value={pitch.risks} />
+                            <Field label="Risk Mitigation" value={pitch.riskMitigation} />
+                        </div>
+                    </Section>
+
+                    <Section title="The Team">
+                        <Field label="Founder Background" value={pitch.founderBackground} />
+                        <Field label="Team Fit" value={pitch.teamFit} />
+                    </Section>
+                </div>
+
+                {/* Sidebar (Right 1/3) */}
+                <div className="space-y-8">
+
+                    {/* The Deal Card */}
+                    <div className="bg-[#0B2C4A] rounded-2xl p-6 text-white shadow-lg">
+                        <h3 className="text-xl font-bold mb-6 border-b border-white/20 pb-4">The Deal</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <span className="block text-xs font-bold text-gray-300 uppercase">Valuation</span>
+                                <span className="text-2xl font-bold">Rs. {pitch.valuation ? formatCurrency(pitch.valuation) : 'N/A'}</span>
+                            </div>
+                            <div>
+                                <span className="block text-xs font-bold text-gray-300 uppercase">Equity Offered</span>
+                                <span className="text-2xl font-bold">{pitch.equityOffered}%</span>
+                            </div>
+                            <div>
+                                <span className="block text-xs font-bold text-gray-300 uppercase">Amount Required</span>
+                                <span className="text-2xl font-bold text-green-400">Rs. {formatCurrency(pitch.amountRequired)}</span>
+                            </div>
+                        </div>
+                        <div className="mt-6 pt-4 border-t border-white/20">
+                            <p className="text-xs font-bold text-gray-300 uppercase mb-2">Use of Funds</p>
+                            <p className="text-sm text-gray-200">{pitch.useOfFunds}</p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                        {/* Left Column: Details */}
-                        <div className="lg:col-span-2 space-y-10">
-
-                            {/* Problem & Solution */}
-                            <section>
-                                <h3 className="text-lg font-bold text-[#0B2C4A] mb-4 flex items-center gap-2">
-                                    <span className="w-8 h-8 rounded-lg bg-[#0B2C4A]/10 flex items-center justify-center text-[#0B2C4A]">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                                    </span>
-                                    Problem & Solution
-                                </h3>
-                                <div className="space-y-6">
-                                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">The Problem</h4>
-                                        <p className="text-gray-600 leading-relaxed text-lg">{pitch.problemStatement}</p>
-                                    </div>
-                                    <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                                        <h4 className="text-sm font-bold text-[#0B2C4A] uppercase tracking-wide mb-2">Our Solution</h4>
-                                        <p className="text-gray-700 leading-relaxed text-lg">{pitch.solution}</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <h4 className="text-sm font-bold text-gray-700 mb-2">Unique Selling Point</h4>
-                                            <p className="text-gray-600">{pitch.uniqueSellingPoint}</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-gray-700 mb-2">Target Customer</h4>
-                                            <p className="text-gray-600">{pitch.targetCustomer}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <hr className="border-gray-100" />
-
-                            {/* Product & Market */}
-                            <section>
-                                <h3 className="text-lg font-bold text-[#0B2C4A] mb-4 flex items-center gap-2">
-                                    <span className="w-8 h-8 rounded-lg bg-[#0B2C4A]/10 flex items-center justify-center text-[#0B2C4A]">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                    </span>
-                                    Product & Market
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                                    <div>
-                                        <span className="block text-xs font-semibold text-gray-400 uppercase mb-1">Industry</span>
-                                        <span className="text-gray-900 font-medium">{pitch.industry}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-semibold text-gray-400 uppercase mb-1">Stage</span>
-                                        <span className="text-gray-900 font-medium">{pitch.stage}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-semibold text-gray-400 uppercase mb-1">Offering Type</span>
-                                        <span className="text-gray-900 font-medium">{pitch.offeringType}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-semibold text-gray-400 uppercase mb-1">Product Status</span>
-                                        <span className="text-gray-900 font-medium">{pitch.productStatus}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-semibold text-gray-400 uppercase mb-1">Market Type</span>
-                                        <span className="text-gray-900 font-medium">{pitch.marketType}</span>
-                                    </div>
-                                </div>
-                                <div className="mt-6">
-                                    <span className="block text-xs font-semibold text-gray-400 uppercase mb-3">Key Features</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {pitch.keyFeatures.map((feature: string, idx: number) => (
-                                            <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
-                                                {feature}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            </section>
-
-                            <hr className="border-gray-100" />
-
-                            {/* Traction & Revenue */}
-                            <section>
-                                <h3 className="text-lg font-bold text-[#0B2C4A] mb-4 flex items-center gap-2">
-                                    <span className="w-8 h-8 rounded-lg bg-[#0B2C4A]/10 flex items-center justify-center text-[#0B2C4A]">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                                    </span>
-                                    Traction & Revenue
-                                </h3>
-                                <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
-                                    <div className="grid grid-cols-3 divide-x divide-gray-100 p-4 bg-gray-50">
-                                        <div className="text-center px-2">
-                                            <span className="block text-xs text-gray-500 uppercase mb-1">Monthly Rev</span>
-                                            <span className="block text-lg font-bold text-[#0B2C4A]">${pitch.monthlyRevenue?.toLocaleString() || 0}</span>
-                                        </div>
-                                        <div className="text-center px-2">
-                                            <span className="block text-xs text-gray-500 uppercase mb-1">Growth Rate</span>
-                                            <span className="block text-lg font-bold text-green-600">{pitch.monthlyGrowthRate}%</span>
-                                        </div>
-                                        <div className="text-center px-2">
-                                            <span className="block text-xs text-gray-500 uppercase mb-1">Total Users</span>
-                                            <span className="block text-lg font-bold text-blue-600">{pitch.customerCount?.toLocaleString() || pitch.totalUsers?.toLocaleString() || 0}</span>
-                                        </div>
-                                    </div>
-                                    <div className="p-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                                            <div>
-                                                <span className="block text-xs font-semibold text-gray-400 uppercase mb-1">Revenue Model</span>
-                                                <p className="text-gray-900">{pitch.revenueModel}</p>
-                                            </div>
-                                            <div>
-                                                <span className="block text-xs font-semibold text-gray-400 uppercase mb-1">Pricing Model</span>
-                                                <p className="text-gray-900">{pitch.pricingModel}</p>
-                                            </div>
-                                        </div>
-                                        {pitch.majorMilestones && pitch.majorMilestones.length > 0 && (
-                                            <div>
-                                                <span className="block text-xs font-semibold text-gray-400 uppercase mb-2">Major Milestones</span>
-                                                <ul className="list-disc list-inside space-y-1 text-gray-600">
-                                                    {pitch.majorMilestones.map((milestone: string, idx: number) => (
-                                                        <li key={idx}>{milestone}</li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </section>
-
+                    {/* Financials Card */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-bold text-[#0B2C4A] mb-4">Financial Projections</h3>
+                        <div className="space-y-4">
+                            <Field label="Monthly Expenses" value={pitch.monthlyExpenses} />
+                            <Field label="Break-Even Point" value={pitch.breakEvenPoint} />
+                            <Field label="Profitability Timeline" value={pitch.profitabilityTimeline} />
                         </div>
+                    </div>
 
-                        {/* Right Column: Sidebar */}
-                        <div className="space-y-8">
+                    {/* Vision Card */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-bold text-[#0B2C4A] mb-4">Vision & Exit</h3>
+                        <div className="space-y-4">
+                            <Field label="5-Year Vision" value={pitch.vision} />
+                            <Field label="Exit Plan" value={pitch.exitPlan} />
+                            <Field label="Plan B (No Investment)" value={pitch.noInvestmentPlan} />
+                        </div>
+                    </div>
 
-                            {/* Overview Card */}
-                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Quick Overview</h3>
-                                <ul className="space-y-4 text-sm">
-                                    <li className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-gray-500">Founded</span>
-                                        <span className="font-medium text-gray-900">{new Date(pitch.createdAt).toLocaleDateString()}</span>
-                                    </li>
-                                    <li className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-gray-500">Views</span>
-                                        <span className="font-medium text-gray-900">{pitch.views || 0}</span>
-                                    </li>
-                                    <li className="flex justify-between border-b border-gray-200 pb-2">
-                                        <span className="text-gray-500">Team Size</span>
-                                        <span className="font-medium text-gray-900">{pitch.teamSize} members</span>
-                                    </li>
-                                    <li className="flex justify-between pt-1">
-                                        <span className="text-gray-500">Funding Type</span>
-                                        <span className="font-medium text-[#0B2C4A]">{pitch.fundingType}</span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            {/* Team */}
-                            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                                <h3 className="text-md font-bold text-[#0B2C4A] mb-4">Founder</h3>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-500 uppercase">
-                                        {pitch.founderName[0]}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900">{pitch.founderName}</p>
-                                        <p className="text-sm text-gray-500">{pitch.founderRole}</p>
-                                        <p className="text-xs text-gray-400 mt-1">{pitch.founderExpYears} years exp.</p>
-                                    </div>
-                                </div>
+                    {/* Documents List */}
+                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                        <h3 className="text-lg font-bold text-[#0B2C4A] mb-4">Documents</h3>
+                        <div className="space-y-3">
+                            <a href={pitch.pitchDeckUrl} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                <span className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 mr-3 group-hover:bg-red-100 transition-colors">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                </span>
                                 <div>
-                                    <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Website Profile</p>
-                                    <div className="flex items-center gap-2">
-                                        <p className="font-medium text-gray-900">
-                                            {pitch.websiteUrl ? (
-                                                <a href={ensureAbsoluteUrl(pitch.websiteUrl)} target="_blank" className="text-blue-600 hover:underline">View Website</a>
-                                            ) : (pendingUpdate?.websiteUrl ? (
-                                                <span className="text-gray-400 italic">No live link</span>
-                                            ) : 'N/A')}
-                                        </p>
-                                        {pendingUpdate?.websiteUrl && pendingUpdate.websiteUrl !== pitch.websiteUrl && (
-                                            <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-xs">
-                                                <span className="font-bold text-amber-700">Pending:</span>
-                                                <a href={ensureAbsoluteUrl(pendingUpdate.websiteUrl)} target="_blank" className="text-blue-600 hover:underline truncate max-w-[150px]">{pendingUpdate.websiteUrl}</a>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <span className="block text-sm font-bold text-gray-900">Pitch Deck</span>
+                                    <span className="text-xs text-gray-500">PDF Document</span>
                                 </div>
-                            </div>
+                            </a>
 
-                            {/* Documents */}
-                            <PitchDocumentSection
-                                pitchDeckUrl={pitch.pitchDeckUrl}
-                                financialsUrl={pitch.financialsUrl}
-                                demoUrl={pitch.demoUrl}
-                            />
+                            {pitch.demoUrl && (
+                                <a href={pitch.demoUrl} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                    <span className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 mr-3 group-hover:bg-blue-100 transition-colors">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
+                                    <div>
+                                        <span className="block text-sm font-bold text-gray-900">Demo / Prototype</span>
+                                        <span className="text-xs text-gray-500">View File/Link</span>
+                                    </div>
+                                </a>
+                            )}
+
+                            {pitch.financialsUrls && pitch.financialsUrls.length > 0 && pitch.financialsUrls.map((url: string, i: number) => (
+                                <a key={i} href={url} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                    <span className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-500 mr-3 group-hover:bg-green-100 transition-colors">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                    </span>
+                                    <div>
+                                        <span className="block text-sm font-bold text-gray-900">Financials {i + 1}</span>
+                                        <span className="text-xs text-gray-500">Document</span>
+                                    </div>
+                                </a>
+                            ))}
+
+                            {pitch.tractionProofUrls && pitch.tractionProofUrls.length > 0 && pitch.tractionProofUrls.map((url: string, i: number) => (
+                                <a key={i} href={url} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                    <span className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 mr-3 group-hover:bg-purple-100 transition-colors">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
+                                    <div>
+                                        <span className="block text-sm font-bold text-gray-900">Traction Proof {i + 1}</span>
+                                        <span className="text-xs text-gray-500">Document</span>
+                                    </div>
+                                </a>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    );
-}
-
-function StatusBadge({ status }: { status: string }) {
-    const styles: any = {
-        pending: 'bg-yellow-100 text-yellow-800',
-        approved: 'bg-green-100 text-green-800',
-        rejected: 'bg-red-100 text-red-800',
-    };
-    return (
-        <span className={`px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wide shadow-sm border border-white/20 backdrop-blur-md ${styles[status]}`}>
-            {status}
-        </span>
     );
 }

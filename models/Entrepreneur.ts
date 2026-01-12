@@ -49,11 +49,15 @@ const EntrepreneurSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    hasSeenWelcome: {
+        type: Boolean,
+        default: false,
+    },
     status: {
         type: String,
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending',
     },
 }, { timestamps: true });
-
+// Schema update trigger: v1
 export default mongoose.models.Entrepreneur || mongoose.model('Entrepreneur', EntrepreneurSchema);

@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
-import PitchUpdate from '@/models/PitchUpdate';
 import { jwtVerify } from 'jose';
 
 async function verifyAdminAuth(req: Request) {
@@ -25,17 +24,16 @@ export async function GET(req: Request) {
 
         await dbConnect();
 
-        const [totalPitches, pendingPitches, updateRequests] = await Promise.all([
-            Pitch.countDocuments({}),
-            Pitch.countDocuments({ status: 'pending' }),
-            PitchUpdate.countDocuments({ status: 'pending' })
+        const [totalPitches, pendingPitches] = await Promise.all([
+            Pitch.countDocuments({ status: { $ne: 'draft' } }), // Exclude drafts from total
+            Pitch.countDocuments({ status: 'pending' })
         ]);
 
         return NextResponse.json({
             stats: {
                 total: totalPitches,
                 pending: pendingPitches,
-                updates: updateRequests
+                updates: 0
             }
         });
     } catch (error) {

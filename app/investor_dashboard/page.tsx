@@ -5,6 +5,7 @@ import dbConnect from '@/lib/db';
 import Investor from '@/models/Investor';
 import { jwtVerify } from 'jose';
 import DashboardNavbar from '@/components/DashboardNavbar';
+import { formatCurrency } from '@/lib/utils';
 
 async function getUser() {
     const cookieStore = await cookies();
@@ -94,11 +95,11 @@ export default async function InvestorDashboard() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-gray-100">
                                 <div>
                                     <span className="block text-gray-500 text-xs uppercase mb-1">Min Investment</span>
-                                    <p className="text-lg font-medium text-gray-900">{user.investmentMin}</p>
+                                    <p className="text-lg font-medium text-gray-900">Rs. {formatCurrency(user.investmentMin)}</p>
                                 </div>
                                 <div>
                                     <span className="block text-gray-500 text-xs uppercase mb-1">Max Investment</span>
-                                    <p className="text-lg font-medium text-gray-900">{user.investmentMax}</p>
+                                    <p className="text-lg font-medium text-gray-900">Rs. {formatCurrency(user.investmentMax)}</p>
                                 </div>
                             </div>
 

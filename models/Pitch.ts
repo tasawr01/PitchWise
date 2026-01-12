@@ -6,90 +6,88 @@ const PitchSchema = new mongoose.Schema({
         ref: 'Entrepreneur',
         required: true,
     },
-    // Step 1: Basics
-    businessName: { type: String, required: true },
-    title: { type: String, required: true },
-    industry: { type: String, required: true },
+    // Part 1: The Idea & The Market
+    logoUrl: { type: String },
+    businessName: { type: String },
+    title: { type: String }, // One-line pitch
+    industry: { type: String },
+    problemStatement: { type: String }, // What real problem
+    targetCustomer: { type: String }, // Who faces this
+    problemUrgency: { type: String }, // Why urgent/painful
+    solution: { type: String }, // Product/Service
+    solutionMechanism: { type: String }, // How it works
+    uniqueSellingPoint: { type: String }, // Why better
+    competitors: { type: String }, // Who are competitors
+    currentAlternatives: { type: String }, // How solved today
+    marketSizeLocation: { type: String }, // Size & Location
+    marketGrowth: { type: String }, // Is growing/Why
+
+    // Part 2: The Business & Execution
     stage: {
         type: String,
-        enum: ['Idea', 'MVP', 'Revenue', 'Growth'],
-        required: true
+        enum: ['Good Idea', 'Research & Development', 'Product Development', 'Shipping/Live', 'Revenue', 'Expansion'],
     },
+    revenueModel: { type: String }, // How make money
+    pricingModel: { type: String },
+    revenuePerCustomer: { type: String }, // Expected rev/customer
+    traction: { type: String }, // Users, sales, feedback
+    customerValidation: { type: String }, // Proof they pay
+    keyTechnology: { type: String }, // Key tech/ops
+    moat: { type: String }, // Hard to copy
+    risks: { type: String }, // Challenges/Risks
+    riskMitigation: { type: String }, // How reduce risks
+    founderBackground: { type: String },
+    teamFit: { type: String }, // Why you?
 
-    // Step 2: Problem & Solution
-    problemStatement: { type: String, required: true },
-    targetCustomer: { type: String, required: true },
-    solution: { type: String, required: true },
-    uniqueSellingPoint: { type: String, required: true },
+    // Part 3: The Deal & The Future
+    amountRequired: { type: Number },
+    equityOffered: { type: Number },
+    valuation: { type: Number },
+    useOfFunds: { type: String },
+    monthlyExpenses: { type: String },
+    breakEvenPoint: { type: String },
+    profitabilityTimeline: { type: String },
+    vision: { type: String }, // 5-year vision
+    exitPlan: { type: String }, // Acquisition/IPO
+    noInvestmentPlan: { type: String }, // If no investment
 
-    // Step 3: Product
-    offeringType: {
-        type: String,
-        enum: ['Product', 'Service', 'Platform'],
-        required: true
-    },
-    productStatus: {
-        type: String,
-        enum: ['Concept', 'Prototype', 'Live'],
-        required: true
-    },
-    keyFeatures: {
-        type: [String],
-        validate: [(val: string[]) => val.length <= 5, '{PATH} exceeds the limit of 5'],
-        required: true
-    },
-
-    // Step 4: Market
-    marketType: {
-        type: String,
-        enum: ['B2B', 'B2C', 'Both'],
-        required: true
-    },
-    hasExistingCustomers: { type: Boolean, required: true },
-    customerCount: { type: Number, default: 0 },
-
-    // Step 5: Revenue
-    revenueModel: { type: String, required: true },
-    pricingModel: { type: String, required: true },
-    monthlyRevenue: { type: Number, default: 0 },
-
-    // Step 6: Traction
-    totalUsers: { type: Number, default: 0 },
-    monthlyGrowthRate: { type: Number, default: 0 }, // Percentage
-    majorMilestones: [String],
-
-    // Step 7: Team
-    founderName: { type: String, required: true },
-    founderRole: { type: String, required: true },
-    founderExpYears: { type: Number, required: true },
-    teamSize: { type: Number, required: true },
-    websiteUrl: { type: String },
-
-    // Step 8: Ask
-    amountRequired: { type: Number, required: true },
-    fundingType: {
-        type: String,
-        enum: ['Equity', 'Partnership', 'Other'],
-        required: true
-    },
-    equityOffered: { type: Number }, // Required if fundingType is Equity
-    useOfFunds: { type: String, required: true },
-
-    // Step 9: Documents & Visuals
-    pitchDeckUrl: { type: String, required: true }, // PDF
-    financialsUrl: { type: String }, // PDF (Optional)
-    demoUrl: { type: String }, // Image/Video (Optional)
+    // Part 4: Documents & Visuals
+    pitchDeckUrl: { type: String }, // PDF
+    demoUrl: { type: String }, // Link/File
+    tractionProofUrls: { type: [String], default: [] }, // Array of URLs
+    financialsUrls: { type: [String], default: [] }, // Array of URLs
 
     // System Fields
     status: {
         type: String,
-        enum: ['pending', 'approved', 'rejected'],
+        enum: ['draft', 'pending', 'approved', 'rejected', 'permanently_rejected'],
         default: 'pending',
     },
+    rejectionCount: {
+        type: Number,
+        default: 0,
+    },
+    remarks: {
+        type: String,
+        default: '',
+    },
+    history: [{
+        action: { type: String, required: true }, // 'rejected', 'approved', 'updated'
+        remarks: { type: String },
+        by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Optional, if we track who rejected
+        date: { type: Date, default: Date.now }
+    }],
     views: {
         type: Number,
         default: 0,
     }
 }, { timestamps: true });
+
+// Prevent Mongoose OverwriteModelError while ensuring schema updates apply in dev
+if (process.env.NODE_ENV === 'development') {
+    if (mongoose.models.Pitch) {
+        delete mongoose.models.Pitch;
+    }
+}
 
 export default mongoose.models.Pitch || mongoose.model('Pitch', PitchSchema);

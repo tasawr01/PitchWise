@@ -27,8 +27,11 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
 
-        let query = {};
-        if (status) {
+        let query: any = { status: { $ne: 'draft' } }; // Default: Exclude drafts
+
+        if (status && status !== 'all') {
+            // If explicit status requested (e.g. pending), use it. 
+            // If status is 'all', we keep the default exclusion.
             query = { status };
         }
 

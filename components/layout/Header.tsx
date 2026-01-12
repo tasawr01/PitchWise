@@ -9,10 +9,10 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const navigation = [
-        { name: 'Explore', href: '#' },
-        { name: 'Community', href: '#' },
-        { name: 'Blog', href: '#' },
-        { name: 'Contact Us', href: '#' },
+        { name: 'Home', href: '/' },
+        { name: 'About Us', href: '/about' },
+        { name: 'Contact Us', href: '/contact' },
+        { name: 'Blogs', href: '#' },
     ];
 
     return (
