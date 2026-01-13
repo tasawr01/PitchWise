@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -188,7 +188,7 @@ interface FormData {
     verificationConsent: boolean;
 }
 
-export default function Signup() {
+function SignupContent() {
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState<FormData>({
         profilePhoto: null,
@@ -1164,5 +1164,13 @@ export default function Signup() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function Signup() {
+    return (
+        <Suspense fallback={<Spinner />}>
+            <SignupContent />
+        </Suspense>
     );
 }

@@ -89,7 +89,7 @@ export async function POST(req: Request) {
         // Construct Data Object (Manual parsing since formData val is string)
         const pitchData: any = {
             entrepreneur: user.id,
-            entrepreneur: user.id,
+
             status,
             logoUrl,
             pitchDeckUrl,

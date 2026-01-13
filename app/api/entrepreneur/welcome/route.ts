@@ -40,7 +40,7 @@ export async function POST(req: Request) {
         // Bypass Mongoose strict mode schema validation by using the native driver
         // This ensures the field is added even if the Schema cache is stale
         await mongoose.connection.collection('entrepreneurs').updateOne(
-            { _id: new mongoose.Types.ObjectId(id) },
+            { _id: new mongoose.Types.ObjectId(id as string) },
             { $set: { hasSeenWelcome: true } }
         );
 
