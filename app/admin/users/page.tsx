@@ -86,26 +86,42 @@ export default function AdminUsers() {
         }
     };
 
-    const handleStatusUpdate = async (userId: string, status: 'approved' | 'rejected') => {
+    const handleStatusUpdate = async (userId: string, userType: string, status: 'approved' | 'rejected', adminComments?: string) => {
+        if (status === 'rejected' && !adminComments) {
+            const comments = prompt('Please provide feedback for rejection:');
+            if (!comments || comments.trim() === '') {
+                alert('Rejection feedback is required');
+                return;
+            }
+            adminComments = comments;
+        }
+
         if (!confirm(`Are you sure you want to ${status.toUpperCase()} this user?`)) return;
 
         try {
-            const res = await fetch(`/api/admin/users/${userId}`, {
-                method: 'PATCH',
+            const endpoint = status === 'approved'
+                ? `/api/admin/users/approve/${userId}`
+                : `/api/admin/users/reject/${userId}`;
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status })
+                body: JSON.stringify({ userType, adminComments })
             });
+
             if (res.ok) {
-                alert(`User ${status} successfully`);
-                setSelectedUser(null); // Close modal if open
+                const data = await res.json();
+                alert(`User ${status} successfully. Email sent to user.`);
+                setSelectedUser(null);
                 fetchUsers();
                 fetchStats();
             } else {
-                alert('Failed to update user status');
+                const errorData = await res.json();
+                alert(`Failed to ${status} user: ${errorData.error}`);
             }
         } catch (error) {
             console.error(error);
-            alert('Error updating user status');
+            alert(`Error updating user status`);
         }
     };
 
@@ -220,13 +236,16 @@ export default function AdminUsers() {
                         {/* Actions Footer */}
                         <div className="mt-8 pt-4 border-t flex justify-end gap-3">
                             <button
-                                onClick={() => handleStatusUpdate(user._id, 'rejected')}
+                                onClick={() => {
+                                    const comments = prompt('Please provide feedback for rejection:');
+                                    if (comments) handleStatusUpdate(user._id, user.role, 'rejected', comments);
+                                }}
                                 className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 font-medium"
                             >
                                 Reject
                             </button>
                             <button
-                                onClick={() => handleStatusUpdate(user._id, 'approved')}
+                                onClick={() => handleStatusUpdate(user._id, user.role, 'approved')}
                                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium shadow-sm transition-colors"
                             >
                                 Approve User
@@ -354,8 +373,8 @@ export default function AdminUsers() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${user.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                                    user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'
+                                                user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
                                                 }`}>
                                                 {user.status}
                                             </span>
@@ -379,13 +398,16 @@ export default function AdminUsers() {
                                                 {activeTab === 'pending' ? (
                                                     <>
                                                         <button
-                                                            onClick={() => handleStatusUpdate(user._id, 'approved')}
+                                                            onClick={() => handleStatusUpdate(user._id, user.role, 'approved')}
                                                             className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md shadow-sm transition-colors text-xs uppercase font-bold tracking-wide"
                                                         >
                                                             Accept
                                                         </button>
                                                         <button
-                                                            onClick={() => handleStatusUpdate(user._id, 'rejected')}
+                                                            onClick={() => {
+                                                                const comments = prompt('Please provide feedback for rejection:');
+                                                                if (comments) handleStatusUpdate(user._id, user.role, 'rejected', comments);
+                                                            }}
                                                             className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md shadow-sm transition-colors text-xs uppercase font-bold tracking-wide"
                                                         >
                                                             Reject

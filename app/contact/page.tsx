@@ -100,7 +100,7 @@ export default function ContactPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm text-blue-200 mb-1">Email Us</p>
-                                            <p className="font-medium">support@pitchwise.com</p>
+                                            <p className="font-medium">pitchwisehub@gmail.com</p>
                                         </div>
                                     </div>
 

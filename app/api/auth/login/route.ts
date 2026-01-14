@@ -32,12 +32,29 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
+        // Check Email Verification Status
+        if (!user.isEmailVerified) {
+            return NextResponse.json({
+                error: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+                needsVerification: true,
+                email: user.email
+            }, { status: 403 });
+        }
+
         // Check Verification Status
         if (user.status !== 'approved') {
             if (user.status === 'rejected') {
-                return NextResponse.json({ error: 'Your account has been rejected. Please contact support.' }, { status: 403 });
+                return NextResponse.json({
+                    error: user.adminComments
+                        ? `Your account has been rejected. Reason: ${user.adminComments}`
+                        : 'Your account has been rejected. Please contact support.',
+                    rejected: true
+                }, { status: 403 });
             }
-            return NextResponse.json({ error: 'Your account is pending verification. Please wait for admin approval.' }, { status: 403 });
+            return NextResponse.json({
+                error: 'Your account is pending admin approval. You will receive an email once approved.',
+                pending: true
+            }, { status: 403 });
         }
 
         // Create JWT

@@ -112,7 +112,7 @@ export default function NotificationBell() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-50 border border-gray-100">
+                <div className="fixed sm:absolute right-0 sm:right-0 left-0 sm:left-auto sm:mt-2 w-full sm:w-80 bg-white rounded-none sm:rounded-lg shadow-xl overflow-hidden z-[100] border-t sm:border border-gray-100 top-16 sm:top-auto max-h-[calc(100vh-4rem)] sm:max-h-80">
                     <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <h3 className="text-sm font-semibold text-gray-700">Notifications</h3>
                         {unreadCount > 0 && (
@@ -124,7 +124,7 @@ export default function NotificationBell() {
                             </button>
                         )}
                     </div>
-                    <div className="max-h-96 overflow-y-auto">
+                    <div className="overflow-y-auto" style={{ maxHeight: 'inherit' }}>
                         {notifications.length === 0 ? (
                             <div className="p-6 text-center text-gray-400 text-sm">
                                 <p>No notifications</p>

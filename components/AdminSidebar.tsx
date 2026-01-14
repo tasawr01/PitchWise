@@ -85,7 +85,7 @@ export default function AdminSidebar({ isOpen, onClose }: { isOpen?: boolean; on
                         <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold">A</div>
                         <div>
                             <p className="text-sm font-medium">Super Admin</p>
-                            <p className="text-xs text-gray-400">admin@pitchwise.com</p>
+                            <p className="text-xs text-gray-400">pitchwisehub@gmail.com</p>
                         </div>
                     </div>
                 </div>

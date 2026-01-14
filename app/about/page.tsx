@@ -102,17 +102,16 @@ export default function AboutPage() {
                 </div>
 
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-center md:text-left">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6 }}
-                            className="p-8 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors"
+                            className="p-10 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors"
                         >
-                            <div className="w-16 h-16 bg-yellow-500 rounded-xl flex items-center justify-center text-3xl mb-6 mx-auto md:mx-0 shadow-lg">🚀</div>
-                            <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
-                            <p className="text-gray-300 text-lg">
+                            <h3 className="text-3xl font-bold mb-6">Our Mission</h3>
+                            <p className="text-gray-300 text-lg leading-relaxed">
                                 To empower every entrepreneur with the tools, guidance, and connections they need to turn a spark of an idea into a world-changing reality.
                             </p>
                         </motion.div>
@@ -122,11 +121,10 @@ export default function AboutPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: 0.2 }}
-                            className="p-8 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors"
+                            className="p-10 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors"
                         >
-                            <div className="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center text-3xl mb-6 mx-auto md:mx-0 shadow-lg">🌍</div>
-                            <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
-                            <p className="text-gray-300 text-lg">
+                            <h3 className="text-3xl font-bold mb-6">Our Vision</h3>
+                            <p className="text-gray-300 text-lg leading-relaxed">
                                 A world where innovation is limited only by imagination, not by geography, background, or network.
                             </p>
                         </motion.div>
@@ -135,8 +133,12 @@ export default function AboutPage() {
             </section>
 
             {/* Core Values */}
-            <section className="py-24 bg-gray-50">
-                <div className="container mx-auto px-4">
+            <section className="py-24 bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative overflow-hidden">
+                {/* Decorative background elements */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-100/40 to-cyan-100/40 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-100/40 to-purple-100/40 rounded-full blur-3xl"></div>
+
+                <div className="container mx-auto px-4 relative z-10">
                     <div className="text-center max-w-3xl mx-auto mb-16">
                         <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-2">Our DNA</h2>
                         <h3 className="text-4xl font-bold text-[#0B2C4A] font-heading">Values That Drive Us</h3>
@@ -150,17 +152,42 @@ export default function AboutPage() {
                             {
                                 title: "Transparency First",
                                 desc: "No hidden fees, no opaque processes. We believe honest information is the bedrock of successful partnerships.",
-                                icon: "💎"
+                                gradient: "from-blue-500/10 to-cyan-500/10",
+                                borderColor: "border-blue-500/20",
+                                accentColor: "bg-blue-500",
+                                icon: (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                )
                             },
                             {
                                 title: "Founder Focused",
                                 desc: "We are in the corner of the dreamer. Every feature we build is designed to lessen the burden on the entrepreneur.",
-                                icon: "🎯"
+                                gradient: "from-indigo-500/10 to-purple-500/10",
+                                borderColor: "border-indigo-500/20",
+                                accentColor: "bg-indigo-500",
+                                icon: (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <circle cx="12" cy="12" r="6" />
+                                        <circle cx="12" cy="12" r="2" />
+                                    </svg>
+                                )
                             },
                             {
                                 title: "Quality Over Quantity",
                                 desc: "We curate our community rigorously. We prefer 100 meaningful connections over 10,000 noise-filled ones.",
-                                icon: "⭐"
+                                gradient: "from-purple-500/10 to-pink-500/10",
+                                borderColor: "border-purple-500/20",
+                                accentColor: "bg-purple-500",
+                                icon: (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="8" r="6" />
+                                        <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+                                    </svg>
+                                )
                             }
                         ].map((value, idx) => (
                             <motion.div
@@ -169,11 +196,30 @@ export default function AboutPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                                className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
+                                className="group relative"
                             >
-                                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">{value.icon}</div>
-                                <h4 className="text-xl font-bold text-[#0B2C4A] mb-3">{value.title}</h4>
-                                <p className="text-gray-500 leading-relaxed">{value.desc}</p>
+                                {/* Card */}
+                                <div className={`relative h-full bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border-2 ${value.borderColor} overflow-hidden`}>
+                                    {/* Gradient overlay */}
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${value.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+
+                                    {/* Top accent line */}
+                                    <div className={`absolute top-0 left-0 right-0 h-1 ${value.accentColor} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left`}></div>
+
+                                    {/* Content */}
+                                    <div className="relative z-10">
+                                        {/* Icon */}
+                                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.gradient} flex items-center justify-center mb-6 ${value.accentColor.replace('bg-', 'text-')} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                            {value.icon}
+                                        </div>
+
+                                        <h4 className="text-xl font-bold text-[#0B2C4A] mb-4 group-hover:text-[#0B2C4A] transition-colors">{value.title}</h4>
+                                        <p className="text-gray-600 leading-relaxed">{value.desc}</p>
+                                    </div>
+
+                                    {/* Bottom decorative line */}
+                                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                                </div>
                             </motion.div>
                         ))}
                     </div>

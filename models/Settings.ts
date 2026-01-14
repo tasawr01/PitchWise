@@ -29,7 +29,7 @@ interface ISettingsModel extends Model<ISettings> {
 const SettingsSchema = new mongoose.Schema({
     // General
     platformName: { type: String, default: 'PitchWise' },
-    supportEmail: { type: String, default: 'support@pitchwise.com' },
+    supportEmail: { type: String, default: 'pitchwisehub@gmail.com' },
     tagline: { type: String, default: 'Connect, Pitch, Grow' },
     maintenanceMode: { type: Boolean, default: false },
     allowRegistrations: { type: Boolean, default: true },

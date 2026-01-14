@@ -75,7 +75,7 @@ export default function Footer() {
                                 <Mail className="h-5 w-5 text-primary shrink-0" />
                                 <div>
                                     <div className="text-sm font-bold text-primary">Email</div>
-                                    <div className="text-sm text-muted-foreground">hello@pitchwise.com</div>
+                                    <div className="text-sm text-muted-foreground">pitchwisehub@gmail.com</div>
                                 </div>
                             </li>
                             <li className="flex items-start gap-3">

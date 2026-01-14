@@ -9,12 +9,10 @@ interface WelcomeGuidanceModalProps {
 
 export default function WelcomeGuidanceModal({ isOpen, onClose }: WelcomeGuidanceModalProps) {
     const [currentStep, setCurrentStep] = useState(0);
-    const [showVideo, setShowVideo] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setCurrentStep(0);
-            setShowVideo(false);
         }
     }, [isOpen]);
 
@@ -23,7 +21,7 @@ export default function WelcomeGuidanceModal({ isOpen, onClose }: WelcomeGuidanc
     const steps = [
         {
             title: "Welcome to PitchWise!",
-            description: "Your journey to securing investment starts here. Watch this video to see how to use PitchWise effectively, or click Next to take a quick tour.",
+            description: "Your journey to securing investment starts here. Click Next to take a quick tour and learn how to use PitchWise effectively.",
             icon: (
                 <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-600">
                     <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -67,31 +65,6 @@ export default function WelcomeGuidanceModal({ isOpen, onClose }: WelcomeGuidanc
         }
     };
 
-    // Video Player Overlay
-    if (showVideo) {
-        return (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
-                <div className="w-full max-w-5xl aspect-video rounded-3xl overflow-hidden shadow-2xl relative border border-white/10 bg-black">
-                    <button
-                        onClick={() => setShowVideo(false)}
-                        className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition-all backdrop-blur-sm group"
-                    >
-                        <svg className="w-8 h-8 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                    <iframe
-                        width="100%"
-                        height="100%"
-                        src="https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1"
-                        title="PitchWise Tutorial"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="w-full h-full"
-                    ></iframe>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
@@ -114,19 +87,6 @@ export default function WelcomeGuidanceModal({ isOpen, onClose }: WelcomeGuidanc
                     {steps[currentStep].icon}
                     <h2 className="text-2xl font-extrabold text-[#0B2C4A] mb-4">{steps[currentStep].title}</h2>
                     <p className="text-gray-600 leading-relaxed mb-6">{steps[currentStep].description}</p>
-
-                    {/* Video Button (Only on Step 0) */}
-                    {currentStep === 0 && (
-                        <button
-                            onClick={() => setShowVideo(true)}
-                            className="mb-6 w-full py-3.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-blue-200 shadow-sm hover:shadow"
-                        >
-                            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md">
-                                <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" /></svg>
-                            </div>
-                            Watch Tutorial Video
-                        </button>
-                    )}
                 </div>
 
                 {/* Dots */}

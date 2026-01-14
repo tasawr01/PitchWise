@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
                             If you have any questions about this privacy policy or our privacy practices, please contact us at:
                         </p>
                         <div className="mt-4">
-                            <p><strong>Email:</strong> hello@pitchwise.com</p>
+                            <p><strong>Email:</strong> pitchwisehub@gmail.com</p>
                             <p><strong>Address:</strong> 123 Innovation Dr, Tech City, TC 90210</p>
                         </div>
                     </section>

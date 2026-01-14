@@ -44,6 +44,14 @@ const EntrepreneurSchema = new mongoose.Schema({
     howDidYouHear: String,
     ideaSafetyPolicy: Boolean,
 
+    // Email Verification
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpiry: Date,
+
     // Verification & Status
     isVerified: {
         type: Boolean,
@@ -58,6 +66,7 @@ const EntrepreneurSchema = new mongoose.Schema({
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending',
     },
+    adminComments: String, // For rejection feedback
 }, { timestamps: true });
 // Schema update trigger: v1
 export default mongoose.models.Entrepreneur || mongoose.model('Entrepreneur', EntrepreneurSchema);

@@ -7,35 +7,35 @@ export default function Testimonials() {
     const testimonials = [
         {
             id: 1,
-            content: "Aliquam sodales dapibus orcida, sedolar interdum augue dapibusinon vestibulo sed porttitor.",
-            author: "Jason Rando",
+            content: "PitchWise helped us connect with the right investors in record time. The platform made our fundraising journey seamless and professional.",
+            author: "Ahmed Hassan",
             role: "Businessman",
-            rating: "4,5",
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+            rating: "5.0",
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
         },
         {
             id: 2,
-            content: "Aliquam sodales dapibus orcida, sedolar interdum augue dapibusinon vestibulo sed porttitor.",
-            author: "Paolie Ranger",
+            content: "As an investor, PitchWise gives me access to high-quality, pre-vetted startups. The quality control and curation are outstanding.",
+            author: "Ayesha Khan",
             role: "Businesswoman",
-            rating: "4,5",
-            avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+            rating: "4.5",
+            avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
         },
         {
             id: 3,
-            content: "Aliquam sodales dapibus orcida, sedolar interdum augue dapibusinon vestibulo sed porttitor.",
-            author: "Michael Kim",
+            content: "Finding investors used to be a nightmare. PitchWise streamlined the entire process and helped us close our seed round in just 3 weeks.",
+            author: "Bilal Farooq",
             role: "Entrepreneur",
-            rating: "4,5",
-            avatar: "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+            rating: "4.8",
+            avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
         },
         {
             id: 4,
-            content: "Aliquam sodales dapibus orcida, sedolar interdum augue dapibusinon vestibulo sed porttitor.",
-            author: "Sarah Jenkins",
+            content: "The platform's verification process ensures I only see serious, well-prepared startups. It's saved me countless hours of due diligence.",
+            author: "Fatima Malik",
             role: "Investor",
-            rating: "4,5",
-            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+            rating: "4.7",
+            avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
         },
     ];
 
@@ -93,14 +93,6 @@ export default function Testimonials() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                     <div className="w-full md:w-auto order-2 md:order-1">
-                        <div className="hidden md:block">
-                            <p className="text-gray-500 text-sm mb-4 max-w-md">
-                                Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy
-                            </p>
-                            <button className="bg-[#0B2C4A] text-white px-8 py-3 rounded-md font-bold text-sm hover:bg-[#0B2C4A]/90 transition-colors">
-                                View All Testimonial
-                            </button>
-                        </div>
                     </div>
                     <div className="w-full md:w-auto text-left md:text-right order-1 md:order-2">
                         <div className="text-sm font-bold text-[#0B2C4A] uppercase tracking-widest mb-2">TESTIMONIAL</div>
@@ -108,15 +100,7 @@ export default function Testimonials() {
                     </div>
                 </div>
 
-                {/* Mobile View All (visible only on mobile) */}
-                <div className="md:hidden mb-12">
-                    <p className="text-gray-500 text-sm mb-4">
-                        Lorem ipsum is simply dummy text of the printing and typesetting industry.
-                    </p>
-                    <button className="bg-[#0B2C4A] text-white px-8 py-3 rounded-md font-bold text-sm hover:bg-[#0B2C4A]/90 transition-colors w-full">
-                        View All Testimonial
-                    </button>
-                </div>
+
 
                 {/* Carousel Track */}
                 <div className="relative w-full overflow-hidden">
@@ -133,8 +117,9 @@ export default function Testimonials() {
                                 className="flex-shrink-0 px-2 md:px-4"
                                 style={{ width: `${cardWidthPercentage}%` }}
                             >
-                                <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm border-b-4 border-transparent hover:border-[#0B2C4A] transition-all h-full">
-                                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
+                                <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm border-b-4 border-transparent hover:border-[#0B2C4A] transition-all h-[340px] flex flex-col">
+                                    {/* Top Section - Rating */}
+                                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 flex-shrink-0">
                                         <div className="flex gap-1">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star key={i} className="h-4 w-4 fill-[#0B2C4A] text-[#0B2C4A]" />
@@ -143,19 +128,23 @@ export default function Testimonials() {
                                         <span className="text-lg font-bold text-black">{testimonial.rating}</span>
                                     </div>
 
-                                    <p className="text-gray-500 mb-6 md:mb-8 italic text-sm leading-relaxed">
-                                        "{testimonial.content}"
-                                    </p>
+                                    {/* Middle Section - Content (flexible) */}
+                                    <div className="flex-grow mb-6 overflow-hidden">
+                                        <p className="text-gray-500 italic text-sm leading-relaxed line-clamp-6">
+                                            "{testimonial.content}"
+                                        </p>
+                                    </div>
 
-                                    <div className="flex items-center gap-4">
+                                    {/* Bottom Section - User Details (pinned to bottom) */}
+                                    <div className="flex items-center gap-4 flex-shrink-0 mt-auto">
                                         <img
                                             src={testimonial.avatar}
                                             alt={testimonial.author}
-                                            className="h-12 w-12 rounded-full object-cover"
+                                            className="h-12 w-12 rounded-full object-cover flex-shrink-0"
                                         />
-                                        <div>
-                                            <div className="font-bold text-black text-lg">{testimonial.author}</div>
-                                            <div className="text-xs text-gray-500 font-medium">{testimonial.role}</div>
+                                        <div className="min-w-0">
+                                            <div className="font-bold text-black text-lg truncate">{testimonial.author}</div>
+                                            <div className="text-xs text-gray-500 font-medium truncate">{testimonial.role}</div>
                                         </div>
                                     </div>
                                 </div>

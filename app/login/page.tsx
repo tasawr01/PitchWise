@@ -172,24 +172,178 @@ export default function Login() {
                 </div>
             </div>
 
-            {/* Right Side - Image/Branding */}
-            <div className="hidden lg:block relative w-0 flex-1">
-                <Image
-                    className="absolute inset-0 h-full w-full object-cover"
-                    src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1932&q=80"
-                    alt="Team collaboration"
-                    fill
-                    priority
-                />
-                <div className="absolute inset-0 bg-[#0B2C4A]/40 mix-blend-multiply" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0B2C4A]/90 via-[#0B2C4A]/20 to-transparent" />
+            {/* Right Side - Premium Animated Background */}
+            <div className="hidden lg:block relative w-0 flex-1 overflow-hidden">
+                {/* Multi-layer Mesh Gradient Background */}
+                <div className="absolute inset-0">
+                    {/* Base gradient layer - Darker navy tones */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#05090f] via-[#0a1628] to-[#0f1a2e]"></div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-12 text-white">
-                    <h2 className="text-4xl font-bold mb-4 font-heading">Connect. Pitch. Grow.</h2>
-                    <p className="text-lg text-gray-200 max-w-lg leading-relaxed">
-                        "PitchWise has completely transformed how we connect with investors. The platform is intuitive, professional, and effective."
-                    </p>
+                    {/* Animated mesh gradient overlays */}
+                    <div className="absolute inset-0 opacity-70">
+                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500/20 via-transparent to-transparent animate-mesh-1"></div>
+                        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-cyan-400/15 via-transparent to-transparent animate-mesh-2"></div>
+                        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-tr from-indigo-500/20 via-transparent to-transparent animate-mesh-3"></div>
+                    </div>
+
+                    {/* Floating gradient orbs with 3D effect */}
+                    <div className="absolute inset-0">
+                        <div className="absolute top-[10%] right-[15%] w-[450px] h-[450px] rounded-full bg-gradient-to-br from-blue-400/30 via-cyan-400/20 to-transparent blur-3xl animate-float-3d-1"></div>
+                        <div className="absolute bottom-[15%] left-[10%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-purple-400/25 via-blue-500/20 to-transparent blur-3xl animate-float-3d-2"></div>
+                        <div className="absolute top-[45%] left-[40%] w-[350px] h-[350px] rounded-full bg-gradient-to-br from-indigo-400/30 via-cyan-300/15 to-transparent blur-[100px] animate-float-3d-3"></div>
+                    </div>
                 </div>
+
+                {/* Floating 3D geometric shapes */}
+                <div className="absolute inset-0 pointer-events-none">
+                    {/* Hexagon */}
+                    <div className="absolute top-[20%] right-[25%] w-20 h-20 animate-float-rotate-1">
+                        <div className="w-full h-full bg-gradient-to-br from-cyan-400/20 to-blue-500/20 backdrop-blur-sm border border-white/10 rotate-45 rounded-lg shadow-2xl"></div>
+                    </div>
+                    {/* Circle */}
+                    <div className="absolute bottom-[30%] right-[15%] w-16 h-16 animate-float-rotate-2">
+                        <div className="w-full h-full bg-gradient-to-br from-blue-400/25 to-indigo-500/25 backdrop-blur-sm border border-white/10 rounded-full shadow-2xl"></div>
+                    </div>
+                    {/* Triangle */}
+                    <div className="absolute top-[60%] right-[35%] w-14 h-14 animate-float-rotate-3">
+                        <div className="w-full h-full bg-gradient-to-br from-purple-400/20 to-cyan-400/20 backdrop-blur-sm border border-white/10 rotate-12 rounded-md shadow-2xl"></div>
+                    </div>
+                    {/* Small accent shapes */}
+                    <div className="absolute top-[35%] right-[8%] w-8 h-8 animate-float-slow">
+                        <div className="w-full h-full bg-gradient-to-br from-cyan-300/30 to-blue-400/30 backdrop-blur-sm border border-white/20 rounded-full shadow-lg"></div>
+                    </div>
+                    <div className="absolute bottom-[50%] right-[45%] w-6 h-6 animate-float-delayed">
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-300/25 to-purple-400/25 backdrop-blur-sm border border-white/15 rounded-sm shadow-lg"></div>
+                    </div>
+                </div>
+
+                {/* Particle effect overlay */}
+                <div className="absolute inset-0 opacity-30">
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute w-1 h-1 bg-white rounded-full animate-particle"
+                            style={{
+                                left: `${(i * 13) % 100}%`,
+                                top: `${(i * 17) % 100}%`,
+                                animationDelay: `${i * 0.3}s`,
+                                animationDuration: `${8 + (i % 4) * 2}s`
+                            }}
+                        ></div>
+                    ))}
+                </div>
+
+                {/* Advanced grid pattern */}
+                <div className="absolute inset-0 opacity-[0.07]" style={{
+                    backgroundImage: `
+                        linear-gradient(to right, white 1px, transparent 1px),
+                        linear-gradient(to bottom, white 1px, transparent 1px)
+                    `,
+                    backgroundSize: '64px 64px'
+                }}></div>
+
+                {/* Minimalist Premium Content - Center Positioned */}
+                <div className="absolute inset-0 flex items-center justify-center p-12">
+                    <div className="max-w-3xl w-full animate-fade-in-up">
+                        {/* Clean Headline */}
+                        <div className="text-center space-y-6">
+                            <h1 className="text-7xl font-light text-white leading-tight tracking-tight drop-shadow-2xl" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                                Welcome Back to
+                                <br />
+                                <span className="font-bold bg-gradient-to-r from-cyan-200 via-blue-200 to-indigo-200 bg-clip-text text-transparent">
+                                    PitchWise
+                                </span>
+                            </h1>
+                            <p className="text-lg text-white/70 font-light tracking-wide drop-shadow" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                                Continue building meaningful connections
+                            </p>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                {/* Premium CSS Animations */}
+                <style jsx>{`
+                    @keyframes mesh-1 {
+                        0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+                        33% { transform: translate(5%, -5%) scale(1.1) rotate(5deg); }
+                        66% { transform: translate(-5%, 5%) scale(0.9) rotate(-5deg); }
+                    }
+                    @keyframes mesh-2 {
+                        0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+                        33% { transform: translate(-8%, 8%) scale(1.15) rotate(-8deg); }
+                        66% { transform: translate(8%, -8%) scale(0.85) rotate(8deg); }
+                    }
+                    @keyframes mesh-3 {
+                        0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+                        50% { transform: translate(10%, -10%) scale(1.2) rotate(10deg); }
+                    }
+                    @keyframes float-3d-1 {
+                        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+                        33% { transform: translate3d(40px, -60px, 30px) scale(1.15); }
+                        66% { transform: translate3d(-30px, 40px, -20px) scale(0.9); }
+                    }
+                    @keyframes float-3d-2 {
+                        0%, 100% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+                        33% { transform: translate3d(-50px, 50px, 40px) scale(0.9) rotate(5deg); }
+                        66% { transform: translate3d(40px, -40px, -30px) scale(1.1) rotate(-5deg); }
+                    }
+                    @keyframes float-3d-3 {
+                        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+                        50% { transform: translate3d(20px, -30px, 50px) scale(1.2); }
+                    }
+                    @keyframes float-rotate-1 {
+                        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+                        33% { transform: translate(20px, -30px) rotate(120deg); }
+                        66% { transform: translate(-15px, 20px) rotate(240deg); }
+                    }
+                    @keyframes float-rotate-2 {
+                        0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+                        50% { transform: translate(-25px, 30px) rotate(180deg) scale(1.2); }
+                    }
+                    @keyframes float-rotate-3 {
+                        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+                        33% { transform: translate(15px, 25px) rotate(-90deg); }
+                        66% { transform: translate(-20px, -15px) rotate(-180deg); }
+                    }
+                    @keyframes float-slow {
+                        0%, 100% { transform: translateY(0px); }
+                        50% { transform: translateY(-20px); }
+                    }
+                    @keyframes float-delayed {
+                        0%, 100% { transform: translateY(0px) rotate(0deg); }
+                        50% { transform: translateY(-15px) rotate(180deg); }
+                    }
+                    @keyframes particle {
+                        0% { transform: translateY(0) scale(0); opacity: 0; }
+                        10% { opacity: 0.6; }
+                        90% { opacity: 0.3; }
+                        100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+                    }
+                    @keyframes spin-slow {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+                    @keyframes fade-in-up {
+                        from { opacity: 0; transform: translateY(40px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-mesh-1 { animation: mesh-1 25s ease-in-out infinite; }
+                    .animate-mesh-2 { animation: mesh-2 30s ease-in-out infinite; }
+                    .animate-mesh-3 { animation: mesh-3 20s ease-in-out infinite; }
+                    .animate-float-3d-1 { animation: float-3d-1 28s ease-in-out infinite; }
+                    .animate-float-3d-2 { animation: float-3d-2 35s ease-in-out infinite; }
+                    .animate-float-3d-3 { animation: float-3d-3 22s ease-in-out infinite; }
+                    .animate-float-rotate-1 { animation: float-rotate-1 20s ease-in-out infinite; }
+                    .animate-float-rotate-2 { animation: float-rotate-2 25s ease-in-out infinite; }
+                    .animate-float-rotate-3 { animation: float-rotate-3 18s ease-in-out infinite; }
+                    .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
+                    .animate-float-delayed { animation: float-delayed 10s ease-in-out infinite; }
+                    .animate-particle { animation: particle linear infinite; }
+                    .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+                    .animate-fade-in-up { animation: fade-in-up 1s ease-out; }
+                `}</style>
             </div>
         </div>
     );

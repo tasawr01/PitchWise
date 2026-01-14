@@ -21,18 +21,21 @@ export default function EntrepreneurDashboardLayout({ children, user }: LayoutPr
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
-    // Automatic welcome modal removed by user request
-    // useEffect(() => {
-    //     // Check if user has seen welcome modal
-    //     fetch('/api/entrepreneur/welcome', { cache: 'no-store' })
-    //         .then(res => res.json())
-    //         .then(data => {
-    //             if (!data.hasSeenWelcome) {
-    //                 setShowWelcomeModal(true);
-    //             }
-    //         })
-    //         .catch(err => console.error('Failed to check welcome status', err));
-    // }, []);
+    // Auto-open welcome modal for first-time users
+    useEffect(() => {
+        const checkWelcomeStatus = async () => {
+            try {
+                const res = await fetch('/api/entrepreneur/welcome', { cache: 'no-store' });
+                const data = await res.json();
+                if (!data.hasSeenWelcome) {
+                    setShowWelcomeModal(true);
+                }
+            } catch (err) {
+                console.error('Failed to check welcome status', err);
+            }
+        };
+        checkWelcomeStatus();
+    }, []);
 
     const handleCloseWelcome = async () => {
         setShowWelcomeModal(false);

@@ -44,8 +44,20 @@ const InvestorSchema = new mongoose.Schema({
     cityCountry: String,
     organizationName: String,
 
+    // Email Verification
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpiry: Date,
+
     // Verification & Status
     isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    hasSeenWelcome: {
         type: Boolean,
         default: false,
     },
@@ -54,6 +66,7 @@ const InvestorSchema = new mongoose.Schema({
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending',
     },
+    adminComments: String, // For rejection feedback
 }, { timestamps: true });
 
 export default mongoose.models.Investor || mongoose.model('Investor', InvestorSchema);
