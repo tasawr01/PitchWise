@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Admin from '@/models/Admin';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
+import { signToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
     try {
@@ -24,11 +24,11 @@ export async function POST(req: Request) {
         }
 
         // Create JWT
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const token = await new SignJWT({ id: admin._id.toString(), role: 'admin', email: admin.email })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('1d')
-            .sign(secret);
+        const token = await signToken({
+            id: admin._id.toString(),
+            role: 'admin',
+            email: admin.email
+        });
 
         const response = NextResponse.json({ message: 'Login successful' });
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 60 * 60 * 24, // 1 day
+            maxAge: 30 * 60, // 30 minutes
             path: '/',
         });
 

@@ -1,18 +1,19 @@
 'use client';
 // Force rebuild
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Spinner from '@/components/Spinner';
 
-export default function AdminLogin() {
+function AdminLoginContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,8 +35,13 @@ export default function AdminLogin() {
                 return;
             }
 
-            // Successfully logged in
-            router.push('/admin/dashboard');
+            // Redirect to protected dashboard or return to saved URL
+            const redirectUrl = searchParams.get('redirect');
+            if (redirectUrl && redirectUrl.startsWith('/')) {
+                router.push(redirectUrl);
+            } else {
+                router.push('/admin/dashboard');
+            }
         } catch (err) {
             setError('Something went wrong. Please try again.');
             setLoading(false);
@@ -145,5 +151,13 @@ export default function AdminLogin() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function AdminLogin() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spinner /></div>}>
+            <AdminLoginContent />
+        </Suspense>
     );
 }

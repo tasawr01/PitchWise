@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Spinner from '@/components/Spinner';
 
-export default function Login() {
+function LoginContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -31,13 +32,18 @@ export default function Login() {
                 throw new Error(data.error || 'Login failed');
             }
 
-            // Redirect based on role
-            if (data.role === 'entrepreneur') {
-                router.push('/entrepreneur_dashboard');
-            } else if (data.role === 'investor') {
-                router.push('/investor_dashboard');
+            // Redirect based on role or return to saved URL
+            const redirectUrl = searchParams.get('redirect');
+            if (redirectUrl && redirectUrl.startsWith('/')) {
+                router.push(redirectUrl);
             } else {
-                router.push('/');
+                if (data.role === 'entrepreneur') {
+                    router.push('/entrepreneur_dashboard');
+                } else if (data.role === 'investor') {
+                    router.push('/investor_dashboard');
+                } else {
+                    router.push('/');
+                }
             }
 
         } catch (err: any) {
@@ -138,9 +144,9 @@ export default function Login() {
                                 </div>
 
                                 <div className="text-sm">
-                                    <a href="#" className="font-medium text-[#0B2C4A] hover:text-[#0B2C4A]/80">
+                                    <Link href="/forgot-password" className="font-medium text-[#0B2C4A] hover:text-[#0B2C4A]/80">
                                         Forgot your password?
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
 
@@ -346,5 +352,13 @@ export default function Login() {
                 `}</style>
             </div>
         </div>
+    );
+}
+
+export default function Login() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spinner /></div>}>
+            <LoginContent />
+        </Suspense>
     );
 }

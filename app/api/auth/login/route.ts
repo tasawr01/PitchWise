@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Entrepreneur from '@/models/Entrepreneur';
 import Investor from '@/models/Investor';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
+import { signToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
     try {
@@ -58,20 +58,20 @@ export async function POST(req: Request) {
         }
 
         // Create JWT
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const token = await new SignJWT({ id: user._id.toString(), role: role, email: user.email })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('7d')
-            .sign(secret);
+        const token = await signToken({
+            id: user._id.toString(),
+            role: role,
+            email: user.email
+        });
 
         const response = NextResponse.json({ message: 'Login successful', role: role });
 
-        // Set HTTP-only cookie
+        // Set HTTP-only cookie with 30-minute inactivity timeout
         response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
+            maxAge: 30 * 60, // 30 minutes (Inactivity Timeout)
             path: '/',
         });
 

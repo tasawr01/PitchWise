@@ -67,6 +67,10 @@ const EntrepreneurSchema = new mongoose.Schema({
         default: 'pending',
     },
     adminComments: String, // For rejection feedback
+
+    // Password Reset
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
 }, { timestamps: true });
 // Schema update trigger: v1
 export default mongoose.models.Entrepreneur || mongoose.model('Entrepreneur', EntrepreneurSchema);

@@ -67,6 +67,10 @@ const InvestorSchema = new mongoose.Schema({
         default: 'pending',
     },
     adminComments: String, // For rejection feedback
+
+    // Password Reset
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
 }, { timestamps: true });
 
 export default mongoose.models.Investor || mongoose.model('Investor', InvestorSchema);

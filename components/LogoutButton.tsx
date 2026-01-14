@@ -5,12 +5,16 @@ import { useRouter } from 'next/navigation';
 export default function LogoutButton() {
     const router = useRouter();
 
-    const handleLogout = () => {
-        // Clear all auth cookies
-        document.cookie = 'token=; Max-Age=0; path=/;';
-        document.cookie = 'userRole=; Max-Age=0; path=/;';
-        // Redirect to main landing page
-        router.push('/');
+    const handleLogout = async () => {
+        try {
+            // Call the logout API to clear secure httpOnly cookies
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+            console.error('Logout failed:', error);
+        } finally {
+            // Redirect to main landing page
+            router.push('/login');
+        }
     };
 
     return (

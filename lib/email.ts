@@ -27,7 +27,6 @@ const transporter = nodemailer.createTransport({
 async function sendEmail({ to, subject, html }: EmailOptions) {
     try {
         console.log('📧 Attempting to send email...');
-        console.log('  App URL:', APP_URL);
         console.log('  To:', to);
         console.log('  Subject:', subject);
 
@@ -89,7 +88,7 @@ export async function sendVerificationEmail(
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px 8px 0 0;">
+                        <td style="padding: 40px 40px 20px; text-align: center; background-color: #0B2C4A; border-radius: 8px 8px 0 0;">
                             <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">PitchWise</h1>
                         </td>
                     </tr>
@@ -97,7 +96,7 @@ export async function sendVerificationEmail(
                     <!-- Content -->
                     <tr>
                         <td style="padding: 40px;">
-                            <h2 style="margin: 0 0 20px; color: #333333; font-size: 24px;">Hi ${userName},</h2>
+                            <h2 style="margin: 0 0 20px; color: #0B2C4A; font-size: 24px;">Hi ${userName},</h2>
                             <p style="margin: 0 0 20px; color: #666666; font-size: 16px; line-height: 1.6;">
                                 Welcome to <strong>PitchWise</strong>! We're excited to have you on board.
                             </p>
@@ -109,7 +108,7 @@ export async function sendVerificationEmail(
                             <table width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td align="center" style="padding: 20px 0;">
-                                        <a href="${verificationUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                        <a href="${verificationUrl}" style="display: inline-block; padding: 16px 40px; background-color: #0B2C4A; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(11, 44, 74, 0.3);">
                                             Verify Email Address
                                         </a>
                                     </td>
@@ -118,7 +117,7 @@ export async function sendVerificationEmail(
                             
                             <p style="margin: 30px 0 0; color: #999999; font-size: 14px; line-height: 1.6;">
                                 Or copy and paste this link into your browser:<br>
-                                <a href="${verificationUrl}" style="color: #667eea; word-break: break-all;">${verificationUrl}</a>
+                                <a href="${verificationUrl}" style="color: #0B2C4A; word-break: break-all;">${verificationUrl}</a>
                             </p>
                             
                             <div style="margin-top: 30px; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
@@ -175,7 +174,7 @@ export async function sendApprovalEmail(email: string, userName: string) {
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px 8px 0 0;">
+                        <td style="padding: 40px 40px 20px; text-align: center; background-color: #0B2C4A; border-radius: 8px 8px 0 0;">
                             <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">PitchWise</h1>
                         </td>
                     </tr>
@@ -184,12 +183,12 @@ export async function sendApprovalEmail(email: string, userName: string) {
                     <tr>
                         <td style="padding: 40px;">
                             <div style="text-align: center; margin-bottom: 30px;">
-                                <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; line-height: 80px;">
+                                <div style="display: inline-block; width: 80px; height: 80px; background-color: #0B2C4A; border-radius: 50%; line-height: 80px;">
                                     <span style="color: white; font-size: 48px;">✓</span>
                                 </div>
                             </div>
                             
-                            <h2 style="margin: 0 0 20px; color: #10b981; font-size: 24px; text-align: center;">Profile Approved!</h2>
+                            <h2 style="margin: 0 0 20px; color: #0B2C4A; font-size: 24px; text-align: center;">Profile Approved!</h2>
                             
                             <p style="margin: 0 0 20px; color: #666666; font-size: 16px; line-height: 1.6;">
                                 Dear <strong>${userName}</strong>,
@@ -202,7 +201,7 @@ export async function sendApprovalEmail(email: string, userName: string) {
                             <table width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td align="center" style="padding: 30px 0;">
-                                        <a href="${loginUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">
+                                        <a href="${loginUrl}" style="display: inline-block; padding: 16px 40px; background-color: #0B2C4A; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(11, 44, 74, 0.3);">
                                             Login to Dashboard
                                         </a>
                                     </td>
@@ -265,7 +264,7 @@ export async function sendRejectionEmail(
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px 8px 0 0;">
+                        <td style="padding: 40px 40px 20px; text-align: center; background-color: #0B2C4A; border-radius: 8px 8px 0 0;">
                             <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">PitchWise</h1>
                         </td>
                     </tr>
@@ -273,7 +272,7 @@ export async function sendRejectionEmail(
                     <!-- Content -->
                     <tr>
                         <td style="padding: 40px;">
-                            <h2 style="margin: 0 0 20px; color: #333333; font-size: 24px;">Profile Review Update</h2>
+                            <h2 style="margin: 0 0 20px; color: #0B2C4A; font-size: 24px;">Profile Review Update</h2>
                             
                             <p style="margin: 0 0 20px; color: #666666; font-size: 16px; line-height: 1.6;">
                                 Dear <strong>${userName}</strong>,
@@ -300,7 +299,7 @@ export async function sendRejectionEmail(
                             <table width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td align="center" style="padding: 20px 0;">
-                                        <a href="${signupUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                        <a href="${signupUrl}" style="display: inline-block; padding: 16px 40px; background-color: #0B2C4A; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(11, 44, 74, 0.3);">
                                             Update Profile
                                         </a>
                                     </td>
@@ -339,4 +338,173 @@ export default {
     sendVerificationEmail,
     sendApprovalEmail,
     sendRejectionEmail,
+    sendPasswordResetEmail,
+    sendPasswordChangeConfirmationEmail,
 };
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(
+    email: string,
+    token: string,
+    name: string
+) {
+    const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center; background-color: #0B2C4A; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">PitchWise</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="margin: 0 0 20px; color: #0B2C4A; font-size: 24px;">Reset Your Password</h2>
+                            
+                            <p style="margin: 0 0 20px; color: #666666; font-size: 16px; line-height: 1.6;">
+                                Hi <strong>${name}</strong>,
+                            </p>
+                            <p style="margin: 0 0 20px; color: #666666; font-size: 16px; line-height: 1.6;">
+                                We received a request to reset your password. If you didn't reach out for this, you can safely ignore this email.
+                            </p>
+                            
+                            <!-- Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0;">
+                                        <a href="${resetUrl}" style="display: inline-block; padding: 16px 40px; background-color: #0B2C4A; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(11, 44, 74, 0.3);">
+                                            Reset Password
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0; color: #999999; font-size: 14px; line-height: 1.6;">
+                                Or copy and paste this link into your browser:<br>
+                                <a href="${resetUrl}" style="color: #0B2C4A; word-break: break-all;">${resetUrl}</a>
+                            </p>
+
+                             <div style="margin-top: 30px; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                                <p style="margin: 0; color: #856404; font-size: 14px;">
+                                    ⏰ <strong>Important:</strong> This link will expire in 1 hour.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="margin: 0 0 10px; color: #999999; font-size: 14px;">
+                                Questions? Contact us at pitchwisehub@gmail.com
+                            </p>
+                            <p style="margin: 0; color: #999999; font-size: 12px;">
+                                © ${new Date().getFullYear()} PitchWise. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+
+    return sendEmail({
+        to: email,
+        subject: 'Reset Your Password - PitchWise',
+        html,
+    });
+}
+
+/**
+ * Send password change confirmation email
+ */
+export async function sendPasswordChangeConfirmationEmail(
+    email: string,
+    name: string
+) {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center; background-color: #0B2C4A; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">PitchWise</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="margin: 0 0 20px; color: #0B2C4A; font-size: 24px;">Password Changed Successfully</h2>
+                            
+                            <p style="margin: 0 0 20px; color: #666666; font-size: 16px; line-height: 1.6;">
+                                Hi <strong>${name}</strong>,
+                            </p>
+                            <p style="margin: 0 0 20px; color: #666666; font-size: 16px; line-height: 1.6;">
+                                This email checks that your password for your PitchWise account was recently changed.
+                            </p>
+                            
+                             <div style="margin-top: 30px; padding: 20px; background-color: #e6f0fa; border-left: 4px solid #0B2C4A; border-radius: 4px;">
+                                <p style="margin: 0; color: #0B2C4A; font-size: 14px;">
+                                    <strong>✅ Success:</strong> You can now log in with your new password.
+                                </p>
+                            </div>
+                            
+                            <p style="margin: 30px 0 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                If you did not make this change, please contact us immediately.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="margin: 0 0 10px; color: #999999; font-size: 14px;">
+                                Questions? Contact us at pitchwisehub@gmail.com
+                            </p>
+                            <p style="margin: 0; color: #999999; font-size: 12px;">
+                                © ${new Date().getFullYear()} PitchWise. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+
+    return sendEmail({
+        to: email,
+        subject: 'Password Changed Successfully - PitchWise',
+        html,
+    });
+}
