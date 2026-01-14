@@ -1,9 +1,13 @@
+'use client';
+
+import AnimatedCounter from '@/components/AnimatedCounter';
+
 export default function StatsBar() {
     const stats = [
-        { id: 1, name: 'Years of Experience', value: '25 Th' },
-        { id: 2, name: 'Successful Creators', value: '720 +' },
-        { id: 3, name: 'Investment Returns', value: '97 %' },
-        { id: 4, name: 'Individual Teams', value: '150 +' },
+        { id: 1, name: 'Years of Experience', number: 25, suffix: ' Th' },
+        { id: 2, name: 'Successful Creators', number: 720, suffix: ' +' },
+        { id: 3, name: 'Investment Returns', number: 97, suffix: ' %' },
+        { id: 4, name: 'Individual Teams', number: 150, suffix: ' +' },
     ];
 
     return (
@@ -14,7 +18,7 @@ export default function StatsBar() {
                         <div key={stat.id} className="mx-auto flex max-w-xs flex-col gap-y-4">
                             <dt className="text-base leading-7 text-white/80">{stat.name}</dt>
                             <dd className="order-first text-3xl font-semibold tracking-tight text-white sm:text-5xl font-heading">
-                                {stat.value}
+                                <AnimatedCounter value={stat.number} suffix={stat.suffix} />
                             </dd>
                         </div>
                     ))}

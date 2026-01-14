@@ -13,7 +13,7 @@ export default function LogoutButton() {
             console.error('Logout failed:', error);
         } finally {
             // Redirect to main landing page
-            router.push('/login');
+            router.push('/');
         }
     };
 

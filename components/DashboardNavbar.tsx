@@ -15,7 +15,7 @@ export default function DashboardNavbar({ title, profilePhoto }: NavbarProps) {
     const handleLogout = () => {
         document.cookie = 'token=; Max-Age=0; path=/;';
         document.cookie = 'userRole=; Max-Age=0; path=/;';
-        router.push('/login');
+        router.push('/');
     };
 
     return (

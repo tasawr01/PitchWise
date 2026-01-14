@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import AnimatedCounter from '@/components/AnimatedCounter';
 
 export default function AboutPage() {
     return (
@@ -231,10 +232,10 @@ export default function AboutPage() {
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-gray-100">
                         {[
-                            { number: "$50M+", label: "Capital Raised" },
-                            { number: "500+", label: "Success Stories" },
-                            { number: "1,200+", label: "Verified Investors" },
-                            { number: "98%", label: "Satisfaction Rate" },
+                            { number: 50, prefix: "$", suffix: "M+", label: "Capital Raised" },
+                            { number: 500, prefix: "", suffix: "+", label: "Success Stories" },
+                            { number: 1200, prefix: "", suffix: "+", label: "Verified Investors" },
+                            { number: 98, prefix: "", suffix: "%", label: "Satisfaction Rate" },
                         ].map((stat, idx) => (
                             <motion.div
                                 key={idx}
@@ -244,7 +245,13 @@ export default function AboutPage() {
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                                 className="text-center p-4 pl-8" // pl-8 to offset divide-x
                             >
-                                <div className="text-4xl md:text-5xl font-extrabold text-[#0B2C4A] mb-2">{stat.number}</div>
+                                <div className="text-4xl md:text-5xl font-extrabold text-[#0B2C4A] mb-2">
+                                    <AnimatedCounter
+                                        value={stat.number}
+                                        prefix={stat.prefix}
+                                        suffix={stat.suffix}
+                                    />
+                                </div>
                                 <div className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{stat.label}</div>
                             </motion.div>
                         ))}

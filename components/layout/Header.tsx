@@ -11,8 +11,8 @@ export default function Header() {
     const navigation = [
         { name: 'Home', href: '/' },
         { name: 'About Us', href: '/about' },
-        { name: 'Contact Us', href: '/contact' },
         { name: 'Blogs', href: '#' },
+        { name: 'Contact Us', href: '/contact' },
     ];
 
     return (
