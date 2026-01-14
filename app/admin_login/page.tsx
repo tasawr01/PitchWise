@@ -10,6 +10,7 @@ import Spinner from '@/components/Spinner';
 function AdminLoginContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [remember, setRemember] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -24,7 +25,7 @@ function AdminLoginContent() {
             const res = await fetch('/api/auth/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, remember }),
             });
 
             const data = await res.json();
@@ -117,6 +118,23 @@ function AdminLoginContent() {
                                     {error}
                                 </div>
                             )}
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <input
+                                        id="remember-me-admin"
+                                        name="remember-me"
+                                        type="checkbox"
+                                        checked={remember}
+                                        onChange={(e) => setRemember(e.target.checked)}
+                                        className="h-4 w-4 rounded border-gray-300 text-[#0B2C4A] focus:ring-[#0B2C4A]"
+                                    />
+                                    <label htmlFor="remember-me-admin" className="ml-2 block text-sm text-gray-900">
+                                        Remember me
+                                    </label>
+                                </div>
+                            </div>
+
 
                             <div>
                                 <button

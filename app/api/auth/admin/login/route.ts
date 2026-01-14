@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Admin from '@/models/Admin';
 import bcrypt from 'bcryptjs';
-import { signToken } from '@/lib/auth';
+import { signToken, SESSION_REMEMBER_TIMEOUT, SESSION_INACTIVITY_TIMEOUT } from '@/lib/auth';
 
 export async function POST(req: Request) {
     try {
         await dbConnect();
-        const { email, password } = await req.json();
+        const { email, password, remember } = await req.json();
 
         if (!email || !password) {
             return NextResponse.json({ error: 'Please provide email and password' }, { status: 400 });
@@ -27,17 +27,21 @@ export async function POST(req: Request) {
         const token = await signToken({
             id: admin._id.toString(),
             role: 'admin',
-            email: admin.email
+            email: admin.email,
+            remember: remember
         });
 
         const response = NextResponse.json({ message: 'Login successful' });
+
+        // Calculate maxAge
+        const maxAge = remember ? SESSION_REMEMBER_TIMEOUT : SESSION_INACTIVITY_TIMEOUT;
 
         // Set HTTP-only cookie
         response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 30 * 60, // 30 minutes
+            maxAge: maxAge,
             path: '/',
         });
 

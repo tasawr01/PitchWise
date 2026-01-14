@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken, SESSION_INACTIVITY_TIMEOUT } from '@/lib/auth';
+import { verifyToken, SESSION_INACTIVITY_TIMEOUT, SESSION_REMEMBER_TIMEOUT } from '@/lib/auth';
+
 
 // Define protected routes and their required roles
 const PROTECTED_ROUTES = [
@@ -68,11 +69,14 @@ export async function middleware(request: NextRequest) {
         // We use NextResponse.next() to continue the request, but we need to set a cookie on the response.
         const response = NextResponse.next();
 
+        // Calculate maxAge based on remember me flag
+        const maxAge = payload.remember ? SESSION_REMEMBER_TIMEOUT : SESSION_INACTIVITY_TIMEOUT;
+
         response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: SESSION_INACTIVITY_TIMEOUT, // Reset to 30 mins
+            maxAge: maxAge,
             path: '/',
         });
 
