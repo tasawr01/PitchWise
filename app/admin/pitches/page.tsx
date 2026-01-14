@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Spinner from '@/components/Spinner';
 
 import { formatCurrency } from '@/lib/utils';
 
@@ -446,7 +447,11 @@ export default function PitchManagement() {
                 </div>
             )}
 
-            {loading ? <div className="p-8 text-center text-gray-500">Loading...</div> : (
+            {loading ? (
+                <div className="flex justify-center items-center p-12">
+                    <Spinner className="w-8 h-8 text-[#0B2C4A]" />
+                </div>
+            ) : (
                 <div className="grid grid-cols-1 gap-6">
                     {/* PITCHES LIST */}
                     {pitches.length === 0 ? (

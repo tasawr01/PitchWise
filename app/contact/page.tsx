@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Spinner from '@/components/Spinner';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Mail, Phone, MapPin, Send, Instagram, Twitter, Linkedin, Facebook } from 'lucide-react';
@@ -14,16 +15,34 @@ export default function ContactPage() {
         message: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
     const [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setTimeout(() => {
-            setIsSubmitting(false);
+        setError('');
+
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formState)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to send message');
+            }
+
             setSubmitted(true);
             setFormState({ name: '', email: '', subject: '', message: '' });
-        }, 1500);
+        } catch (err: any) {
+            setError(err.message || 'Something went wrong. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -153,55 +172,61 @@ export default function ContactPage() {
                                 <form onSubmit={handleSubmit} className="h-full flex flex-col justify-center">
                                     <h3 className="text-2xl font-bold text-[#0B2C4A] mb-8">Send a Message</h3>
 
+                                    {error && (
+                                        <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">
+                                            {error}
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div className="group">
-                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Your Name</label>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Your Name</label>
                                             <input
                                                 type="text"
                                                 name="name"
                                                 value={formState.name}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-800 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors"
+                                                className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-900 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors"
                                                 placeholder="Name"
                                             />
                                         </div>
                                         <div className="group">
-                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Email Address</label>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Email Address</label>
                                             <input
                                                 type="email"
                                                 name="email"
                                                 value={formState.email}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-800 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors"
+                                                className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-900 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors"
                                                 placeholder="Email"
                                             />
                                         </div>
                                     </div>
 
                                     <div className="group mb-6">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Subject</label>
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Subject</label>
                                         <input
                                             type="text"
                                             name="subject"
                                             value={formState.subject}
                                             onChange={handleChange}
                                             required
-                                            className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-800 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors"
+                                            className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-900 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors"
                                             placeholder="Subject"
                                         />
                                     </div>
 
                                     <div className="group mb-10">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Message</label>
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 group-focus-within:text-[#0B2C4A] transition-colors">Message</label>
                                         <textarea
                                             name="message"
                                             rows={4}
                                             value={formState.message}
                                             onChange={handleChange}
                                             required
-                                            className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-800 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors resize-none"
+                                            className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-gray-900 placeholder-transparent focus:border-[#0B2C4A] focus:outline-none transition-colors resize-none"
                                             placeholder="Message"
                                         ></textarea>
                                     </div>
@@ -212,7 +237,12 @@ export default function ContactPage() {
                                             disabled={isSubmitting}
                                             className="px-10 py-4 bg-[#0B2C4A] text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-[#09223a] transition-all transform hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed"
                                         >
-                                            {isSubmitting ? 'Sending...' : 'Send Message'}
+                                            {isSubmitting ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Spinner className="w-5 h-5 text-white" />
+                                                    <span>Sending...</span>
+                                                </div>
+                                            ) : 'Send Message'}
                                         </button>
                                     </div>
                                 </form>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Spinner from '@/components/Spinner';
 
 export default function AdminUsers() {
     const [activeTab, setActiveTab] = useState('approved'); // 'pending' | 'approved' | 'doc-requests'
@@ -292,7 +293,11 @@ export default function AdminUsers() {
                 </button>
             </div>
 
-            {loading ? <div className="p-8 text-center text-gray-500">Loading...</div> : (
+            {loading ? (
+                <div className="flex justify-center items-center p-12">
+                    <Spinner className="w-8 h-8 text-[#0B2C4A]" />
+                </div>
+            ) : (
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                     {activeTab === 'doc-requests' ? (
                         <table className="min-w-full divide-y divide-gray-200">
