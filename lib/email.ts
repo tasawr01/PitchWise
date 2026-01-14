@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
 interface EmailOptions {
     to: string;
@@ -9,6 +9,10 @@ interface EmailOptions {
 }
 
 // Gmail SMTP Configuration
+if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+    console.warn('⚠️  Missing GMAIL_USER or GMAIL_PASS environment variables. Email sending will fail.');
+}
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -23,6 +27,7 @@ const transporter = nodemailer.createTransport({
 async function sendEmail({ to, subject, html }: EmailOptions) {
     try {
         console.log('📧 Attempting to send email...');
+        console.log('  App URL:', APP_URL);
         console.log('  To:', to);
         console.log('  Subject:', subject);
 
