@@ -163,13 +163,7 @@ export async function POST(req: Request) {
         }
 
         // Notify Admins
-        const { notifyAdmins } = await import('@/lib/notification');
-        await notifyAdmins(
-            `New ${role} registration: ${userData.fullName || email} (Email verification pending)`,
-            'info',
-            newUser._id,
-            role === 'entrepreneur' ? 'Entrepreneur' : 'Investor'
-        );
+        // Admin notification is now handled in the verify-email route after successfully confirming the email
 
         return NextResponse.json({
             message: 'Registration successful! Please check your email to verify your account.',

@@ -69,6 +69,15 @@ export async function GET(request: NextRequest) {
         user.emailVerificationExpiry = undefined;
         await user.save();
 
+        // Notify Admins now that email is verified
+        const { notifyAdmins } = await import('@/lib/notification');
+        await notifyAdmins(
+            `New ${userType === 'entrepreneur' ? 'Entrepreneur' : 'Investor'} registration: ${user.fullName} (Email verified)`,
+            'info',
+            user._id,
+            userType === 'entrepreneur' ? 'Entrepreneur' : 'Investor'
+        );
+
         return NextResponse.json(
             {
                 success: true,

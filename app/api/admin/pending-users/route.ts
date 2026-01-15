@@ -14,8 +14,8 @@ export async function GET() {
         // Ideally verify admin token here
         // const token = cookies().get('token'); ...
 
-        const pendingEntrepreneurs = await Entrepreneur.find({ status: 'pending' }).select('-password').lean();
-        const pendingInvestors = await Investor.find({ status: 'pending' }).select('-password').lean();
+        const pendingEntrepreneurs = await Entrepreneur.find({ status: 'pending', isEmailVerified: true }).select('-password').lean();
+        const pendingInvestors = await Investor.find({ status: 'pending', isEmailVerified: true }).select('-password').lean();
 
         const formattedEntrepreneurs = pendingEntrepreneurs.map((user: any) => ({ ...user, role: 'entrepreneur', id: user._id }));
         const formattedInvestors = pendingInvestors.map((user: any) => ({ ...user, role: 'investor', id: user._id }));

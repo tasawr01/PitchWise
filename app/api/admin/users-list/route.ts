@@ -26,10 +26,27 @@ export async function GET(req: Request) {
     const status = searchParams.get('status'); // 'pending', 'approved', 'rejected', or null for all
 
     try {
-        let query = {};
+        const baseQuery: any = {};
         if (status && status !== 'all') {
-            query = { status };
+            baseQuery.status = status;
         }
+
+        // Always exclude unverified pending users
+        // Users are included if:
+        // 1. Their status is NOT pending
+        // OR
+        // 2. Their status IS pending AND they are verified
+        const query = {
+            $and: [
+                baseQuery,
+                {
+                    $or: [
+                        { status: { $ne: 'pending' } },
+                        { status: 'pending', isEmailVerified: true }
+                    ]
+                }
+            ]
+        };
 
         const entrepreneurs = await Entrepreneur.find(query).select('-password').sort({ createdAt: -1 }).lean();
         const investors = await Investor.find(query).select('-password').sort({ createdAt: -1 }).lean();
