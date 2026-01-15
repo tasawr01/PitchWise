@@ -7,10 +7,11 @@ export default function AdminUsers() {
     const [activeTab, setActiveTab] = useState('approved'); // 'pending' | 'approved' | 'doc-requests'
     const [users, setUsers] = useState<any[]>([]);
     const [docRequests, setDocRequests] = useState<any[]>([]);
+    const [subscribers, setSubscribers] = useState<any[]>([]);
     const [selectedUser, setSelectedUser] = useState<any>(null); // For Review Modal
     const [loading, setLoading] = useState(true);
 
-    const [stats, setStats] = useState({ approved: 0, pending: 0, docRequests: 0 });
+    const [stats, setStats] = useState({ approved: 0, pending: 0, docRequests: 0, newsletter: 0 });
 
     useEffect(() => {
         // Initial fetch for stats
@@ -20,6 +21,8 @@ export default function AdminUsers() {
     useEffect(() => {
         if (activeTab === 'doc-requests') {
             fetchDocRequests();
+        } else if (activeTab === 'newsletter') {
+            fetchNewsletter();
         } else {
             fetchUsers();
         }
@@ -30,16 +33,19 @@ export default function AdminUsers() {
             // Fetch all users to count statuses
             const usersRes = await fetch('/api/admin/users-list'); // Fetches all by default
             const docsRes = await fetch('/api/admin/document-updates'); // Fetches pending docs
+            const newsRes = await fetch('/api/admin/newsletter');
 
             const usersData = await usersRes.json();
             const docsData = await docsRes.json();
+            const newsData = await newsRes.json();
 
             const allUsers = usersData.users || [];
             const approvedCount = allUsers.filter((u: any) => u.status === 'approved').length;
             const pendingCount = allUsers.filter((u: any) => u.status === 'pending').length;
             const docsCount = docsData.updates?.length || 0;
+            const newsCount = newsData.subscribers?.length || 0;
 
-            setStats({ approved: approvedCount, pending: pendingCount, docRequests: docsCount });
+            setStats({ approved: approvedCount, pending: pendingCount, docRequests: docsCount, newsletter: newsCount });
         } catch (error) {
             console.error('Failed to fetch stats', error);
         }
@@ -65,6 +71,18 @@ export default function AdminUsers() {
             setDocRequests(data.updates || []);
         } catch (error) {
             console.error('Failed to fetch doc requests', error);
+        }
+        setLoading(false);
+    };
+
+    const fetchNewsletter = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/admin/newsletter');
+            const data = await res.json();
+            setSubscribers(data.subscribers || []);
+        } catch (error) {
+            console.error('Failed to fetch newsletter subscribers', error);
         }
         setLoading(false);
     };
@@ -145,6 +163,31 @@ export default function AdminUsers() {
         } catch (error) {
             console.error(error);
         }
+    };
+
+    const downloadCSV = () => {
+        if (!subscribers.length) {
+            alert('No data to export');
+            return;
+        }
+
+        const headers = ['Email Address', 'Subscribed Date'];
+        const csvContent = [
+            headers.join(','),
+            ...subscribers.map(sub => {
+                const date = new Date(sub.subscribedAt).toLocaleDateString();
+                return `"${sub.email}","${date}"`;
+            })
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'newsletter_subscribers.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     // Modal Component
@@ -291,6 +334,15 @@ export default function AdminUsers() {
                         {stats.docRequests}
                     </span>
                 </button>
+                <button
+                    onClick={() => setActiveTab('newsletter')}
+                    className={`pb-2 px-1 flex items-center gap-2 ${activeTab === 'newsletter' ? 'border-b-2 border-[#0B2C4A] text-[#0B2C4A] font-bold' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    Newsletter
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'newsletter' ? 'bg-[#0B2C4A] text-white' : 'bg-gray-100 text-gray-600'}`}>
+                        {stats.newsletter}
+                    </span>
+                </button>
             </div>
 
             {loading ? (
@@ -301,6 +353,7 @@ export default function AdminUsers() {
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                     {activeTab === 'doc-requests' ? (
                         <table className="min-w-full divide-y divide-gray-200">
+                            {/* ... (Existing Doc Requests Table) ... */}
                             <thead className="bg-[#0B2C4A] text-white">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">User</th>
@@ -351,6 +404,43 @@ export default function AdminUsers() {
                                 )}
                             </tbody>
                         </table>
+                    ) : activeTab === 'newsletter' ? (
+                        <>
+                            <div className="p-4 border-b border-gray-100 flex justify-end bg-gray-50/50">
+                                <button
+                                    onClick={downloadCSV}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold shadow-sm"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Download CSV
+                                </button>
+                            </div>
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-[#0B2C4A] text-white">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Email Address</th>
+                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Subscribed Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {subscribers.map((sub) => (
+                                        <tr key={sub._id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {sub.email}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {new Date(sub.subscribedAt).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {subscribers.length === 0 && (
+                                        <tr><td colSpan={2} className="px-6 py-8 text-center text-gray-500">No subscribers yet.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-[#0B2C4A] text-white">
