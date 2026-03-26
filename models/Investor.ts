@@ -68,6 +68,12 @@ const InvestorSchema = new mongoose.Schema({
     },
     adminComments: String, // For rejection feedback
 
+    // Watchlist
+    watchlist: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Pitch',
+    }],
+
     // Password Reset
     resetPasswordToken: String,
     resetPasswordExpires: Date,

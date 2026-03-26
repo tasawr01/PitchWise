@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
+import Conversation from '@/models/Conversation';
+import Message from '@/models/Message';
 import '@/models/Entrepreneur'; // Ensure Entrepreneur model is registered for population
 import { deleteFromCloudinary } from '@/lib/cloudinary';
 import { jwtVerify } from 'jose';
@@ -70,6 +72,15 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden: You can only delete your own pitches' }, { status: 403 });
         }
 
+        // Cascade delete conversations and messages
+        const conversations = await Conversation.find({ pitch: id }, '_id');
+        const conversationIds = conversations.map(c => c._id);
+
+        if (conversationIds.length > 0) {
+            await Message.deleteMany({ conversation: { $in: conversationIds } });
+            await Conversation.deleteMany({ pitch: id });
+        }
+
         // Delete Cloudinary Files
         if (pitch.pitchDeckUrl) await deleteFromCloudinary(pitch.pitchDeckUrl);
         if (pitch.financialsUrl) await deleteFromCloudinary(pitch.financialsUrl);
@@ -88,7 +99,7 @@ export async function DELETE(
             );
         }
 
-        return NextResponse.json({ message: 'Pitch deleted successfully' });
+        return NextResponse.json({ message: 'Pitch and associated chats deleted successfully' });
 
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

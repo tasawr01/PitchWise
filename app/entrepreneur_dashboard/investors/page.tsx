@@ -1,44 +1,65 @@
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
+import { getMyInvestors } from '@/app/actions/entrepreneur';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+import { redirect } from 'next/navigation';
+import { formatCurrency } from '@/lib/utils';
+import Link from 'next/link';
 
-export default function MyInvestors() {
-    // Dummy Data reflecting real schema
-    const investors = [
-        {
-            id: 1,
-            name: 'Alex Morgan',
-            pitchName: 'Ecoify',
-            amountInvested: '$50,000',
-            profileImage: '',
-        },
-        {
-            id: 2,
-            name: 'Sarah Tech',
-            pitchName: 'HealthAI',
-            amountInvested: '$120,000',
-            profileImage: '',
-        },
-        {
-            id: 3,
-            name: 'Global Ventures',
-            pitchName: 'SolarPower',
-            amountInvested: '$250,000',
-            profileImage: '',
-        },
-    ];
+export const dynamic = 'force-dynamic';
+
+async function getUser() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    if (!token) return null;
+    try {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        const { payload } = await jwtVerify(token, secret);
+        if (payload.role !== 'entrepreneur') return null;
+        return payload;
+    } catch {
+        return null;
+    }
+}
+
+export default async function MyInvestors() {
+    const user = await getUser();
+    if (!user) redirect('/login');
+
+    const { success, investors } = await getMyInvestors(user.id as string);
+
+    // Filter out duplicates if an investor invested multiple times? 
+    // Or just group by investor ID and sum the amounts. Let's group them by investor to provide a unified card per investor.
+    const uniqueInvestorsMap = new Map();
+    if (success && investors) {
+        for (const inv of investors) {
+            if (uniqueInvestorsMap.has(inv.investorId)) {
+                // Combine the investments
+                const existing = uniqueInvestorsMap.get(inv.investorId);
+                existing.amountInvested += inv.amountInvested;
+                // Append pitch names
+                if (!existing.pitchName.includes(inv.pitchName)) {
+                    existing.pitchName += `, ${inv.pitchName}`;
+                }
+            } else {
+                uniqueInvestorsMap.set(inv.investorId, { ...inv });
+            }
+        }
+    }
+
+    const aggregatedInvestors = Array.from(uniqueInvestorsMap.values());
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 max-w-7xl mx-auto">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
                     <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">Active Investors</h2>
-                    <p className="text-gray-500 mt-2 text-lg">Manage your investor relationships per pitch.</p>
+                    <p className="text-gray-500 mt-2 text-lg">Manage relationships with investors who have backed your pitches.</p>
                 </div>
             </header>
 
-            {investors.length === 0 ? (
+            {!success || aggregatedInvestors.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300">
                     <div className="w-20 h-20 bg-[#0B2C4A]/10 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg className="h-10 w-10 text-[#0B2C4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -46,16 +67,15 @@ export default function MyInvestors() {
                         </svg>
                     </div>
                     <h3 className="mt-2 text-xl font-bold text-[#0B2C4A]">No Investors Found</h3>
-                    <p className="mt-2 text-gray-500 max-w-sm mx-auto">It seems there are no active investors matching your criteria at the moment.</p>
+                    <p className="mt-2 text-gray-500 max-w-sm mx-auto">Currently, there are no approved investment deals backing any of your active pitches.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {investors.map((investor: any) => (
-                        <div key={investor.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center p-8 overflow-hidden group">
-
+                    {aggregatedInvestors.map((investor: any) => (
+                        <div key={investor.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center p-8 overflow-hidden group relative">
                             {/* Avatar */}
                             <div className="w-24 h-24 relative mb-4">
-                                <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100">
+                                <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100 relative">
                                     {investor.profileImage ? (
                                         <Image
                                             src={investor.profileImage}
@@ -64,7 +84,7 @@ export default function MyInvestors() {
                                             className="object-cover"
                                         />
                                     ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-[#0B2C4A] to-slate-900 flex items-center justify-center text-white font-bold text-2xl">
+                                        <div className="w-full h-full bg-gradient-to-br from-[#0B2C4A] to-slate-900 flex items-center justify-center text-white font-bold text-3xl">
                                             {investor.name.charAt(0)}
                                         </div>
                                     )}
@@ -72,31 +92,31 @@ export default function MyInvestors() {
                             </div>
 
                             {/* Name */}
-                            <h3 className="text-xl font-bold text-[#0B2C4A] mb-1 group-hover:text-[#0B2C4A] transition-colors">{investor.name}</h3>
+                            <h3 className="text-xl font-bold text-[#0B2C4A] mb-1 group-hover:text-blue-800 transition-colors">{investor.name}</h3>
 
                             {/* Pitch Name */}
-                            <div className="mb-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
-                                <span className="font-medium text-gray-400">Invested in:</span>
-                                <span className="font-bold text-[#0B2C4A]">{investor.pitchName}</span>
+                            <div className="mb-2 flex flex-col items-center gap-1 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                                <span className="text-xs uppercase font-semibold text-gray-400">Total Invested In</span>
+                                <span className="font-bold text-[#0B2C4A] text-center">{investor.pitchName}</span>
                             </div>
 
-                            {/* Amount Invested - NEW */}
-                            <div className="mb-6 flex flex-col items-center">
-                                <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Amount Invested</span>
-                                <span className="text-2xl font-bold text-green-600">{investor.amountInvested}</span>
+                            {/* Amount Invested */}
+                            <div className="mb-6 mt-2 flex flex-col items-center">
+                                <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Total Capital Received</span>
+                                <span className="text-3xl font-bold text-green-600 drop-shadow-sm mt-1">Rs. {formatCurrency(investor.amountInvested)}</span>
                             </div>
 
                             {/* Actions */}
-                            <div className="w-full grid grid-cols-2 gap-3 mt-auto">
-                                <button className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl shadow-sm hover:bg-gray-50 transition-colors text-sm">
-                                    View Profile
-                                </button>
-                                <button className="flex-1 py-2.5 bg-[#0B2C4A] border border-transparent text-white font-semibold rounded-xl shadow-sm hover:bg-[#09223a] hover:shadow-md transition-all text-sm flex items-center justify-center gap-2">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="w-full mt-auto pt-4 border-t border-gray-100">
+                                <Link
+                                    href={`/messages?userId=${investor.investorId}`}
+                                    className="w-full py-3 bg-[#0B2C4A] text-white font-semibold rounded-xl hover:bg-[#09223a] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                     </svg>
-                                    Chat
-                                </button>
+                                    Chat with Investor
+                                </Link>
                             </div>
                         </div>
                     ))}

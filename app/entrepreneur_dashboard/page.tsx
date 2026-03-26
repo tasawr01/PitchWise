@@ -1,15 +1,19 @@
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
+import Conversation from '@/models/Conversation';
+import Deal from '@/models/Deal';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import LineChart from '@/components/charts/LineChart';
 import RecentActivity from '@/components/entrepreneur/RecentActivity';
 
+export const dynamic = 'force-dynamic';
+
 // Fetch specific stats
 async function getStats() {
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
-    if (!token) return { props: { pitchCount: 0, views: 0 } };
+    if (!token) return { props: { pitchCount: 0, views: 0, activeChats: 0, completedDeals: 0 } };
 
     try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
@@ -17,22 +21,37 @@ async function getStats() {
         await dbConnect();
 
         const pitchCount = await Pitch.countDocuments({ entrepreneur: payload.id });
+
         // Aggregate views (Basic sum)
         const pitches = await Pitch.find({ entrepreneur: payload.id }).select('views');
         const views = pitches.reduce((acc, curr) => acc + (curr.views || 0), 0);
 
-        return { pitchCount, views };
+        // Real-time metrics
+        // Real-time metrics
+        const pendingApprovals = await Deal.countDocuments({
+            entrepreneur: payload.id,
+            status: 'pending'
+        });
+
+        const approvedDeals = await Deal.find({
+            entrepreneur: payload.id,
+            status: 'approved'
+        });
+
+        const completedDeals = approvedDeals.length;
+        const totalRaised = approvedDeals.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+        return { pitchCount, totalRaised, pendingApprovals, completedDeals };
     } catch {
-        return { pitchCount: 0, views: 0 };
+        return { pitchCount: 0, totalRaised: 0, pendingApprovals: 0, completedDeals: 0 };
     }
 }
 
-export default async function EntrepreneurOverview() {
-    const { pitchCount, views } = await getStats();
+// Need to import formatCurrency since we're using it now. Adding it below.
+import { formatCurrency } from '@/lib/utils';
 
-    // DUMMY DATA for "Active Chats" and "Completed Deals"
-    const activeChats = 3;
-    const completedDeals = 1;
+export default async function EntrepreneurOverview() {
+    const { pitchCount, totalRaised, pendingApprovals, completedDeals } = await getStats() as any;
 
     return (
         <div className="space-y-8">
@@ -51,11 +70,11 @@ export default async function EntrepreneurOverview() {
                     icon={<svg className="w-6 h-6 text-[#0B2C4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>}
                 />
                 <StatCard
-                    title="Active Chats"
-                    value={activeChats}
-                    sub="Investor Interest"
+                    title="Pending Deals"
+                    value={pendingApprovals}
+                    sub="Awaiting Investor Signatures"
                     color="green"
-                    icon={<svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>}
+                    icon={<svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 />
                 <StatCard
                     title="Completed Deals"
@@ -65,11 +84,11 @@ export default async function EntrepreneurOverview() {
                     icon={<svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 />
                 <StatCard
-                    title="Total Views"
-                    value={views}
-                    sub="All Time Reach"
+                    title="Total Raised"
+                    value={`Rs. ${formatCurrency(totalRaised || 0)}`}
+                    sub="Capital Secured"
                     color="orange"
-                    icon={<svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>}
+                    icon={<svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 />
             </div>
 

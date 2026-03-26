@@ -54,4 +54,18 @@ async function dbConnect() {
     return cached.conn;
 }
 
+// Ensure all models are registered to prevent MissingSchemaError across server chunks
+import '@/models/Admin';
+import '@/models/Conversation';
+import '@/models/Deal';
+import '@/models/DocumentUpdate';
+import '@/models/Entrepreneur';
+import '@/models/Investor';
+import '@/models/Message';
+import '@/models/Newsletter';
+import '@/models/Notification';
+import '@/models/Pitch';
+import '@/models/PitchUpdate';
+import '@/models/Settings';
+
 export default dbConnect;
