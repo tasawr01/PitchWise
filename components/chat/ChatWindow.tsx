@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from '@/context/ChatContext';
-import { Send, Paperclip, MoreVertical } from 'lucide-react';
+import { Send, Paperclip, MoreVertical, FileText, ImageIcon, X, Loader2 } from 'lucide-react';
 
 export default function ChatWindow({ userId, userRole }: { userId: string, userRole: string }) {
     const {
@@ -16,13 +16,16 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
         pendingNavigation,
         setPendingNavigation
     } = useChat();
+
     const [newMessage, setNewMessage] = useState('');
+    const [filePreview, setFilePreview] = useState<{ file: File; previewUrl: string | null } | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (activeConversation) {
             joinConversation(activeConversation._id);
-            // Fetch messages
             fetch(`/api/chat/messages?conversationId=${activeConversation._id}`)
                 .then(res => res.json())
                 .then(data => {
@@ -36,18 +39,92 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSendMessage = (e?: React.FormEvent) => {
-        e?.preventDefault();
-        if (!newMessage.trim() || !activeConversation || !socket) return;
+    // ── File picking ──────────────────────────────────────
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
+        // Image preview
+        const isImage = file.type.startsWith('image/');
+        const previewUrl = isImage ? URL.createObjectURL(file) : null;
+        setFilePreview({ file, previewUrl });
+
+        // Reset input so same file can be re-selected
+        e.target.value = '';
+    };
+
+    const clearFilePreview = () => {
+        if (filePreview?.previewUrl) URL.revokeObjectURL(filePreview.previewUrl);
+        setFilePreview(null);
+    };
+
+    // ── Send (text or file) ───────────────────────────────
+    const handleSendMessage = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (!activeConversation || !socket) return;
+        if (!newMessage.trim() && !filePreview) return;
+
+        // If there's a file, upload first
+        if (filePreview) {
+            setIsUploading(true);
+            try {
+                const formData = new FormData();
+                formData.append('file', filePreview.file);
+
+                const res = await fetch('/api/chat/messages/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert(err.error || 'Upload failed');
+                    setIsUploading(false);
+                    return;
+                }
+
+                const { url, fileName } = await res.json();
+                if (!url) {
+                    alert('File upload failed: No file URL returned.');
+                    setIsUploading(false);
+                    return;
+                }
+                const isImage = filePreview.file.type.startsWith('image/');
+
+                // Always send as file or image, never as plain text
+                const messageData = {
+                    conversationId: activeConversation._id,
+                    sender: {
+                        user: userId,
+                        userModel: userRole === 'investor' ? 'Investor' : 'Entrepreneur',
+                    },
+                    content: newMessage.trim() || fileName,  // fallback caption = filename
+                    type: isImage ? 'image' : 'file',
+                    fileUrl: url,
+                    fileName: fileName,
+                };
+
+                console.log('Sending messageData:', messageData);
+                socket.emit('send_message', messageData);
+                clearFilePreview();
+                setNewMessage('');
+            } catch (err) {
+                alert('Upload failed');
+            } finally {
+                setIsUploading(false);
+            }
+            return;
+        }
+
+        // Plain text message
         const messageData = {
             conversationId: activeConversation._id,
             sender: {
                 user: userId,
-                userModel: userRole === 'investor' ? 'Investor' : 'Entrepreneur' // Adjust based on props
+                userModel: userRole === 'investor' ? 'Investor' : 'Entrepreneur',
             },
             content: newMessage,
-            type: 'text'
+            type: 'text',
         };
 
         socket.emit('send_message', messageData);
@@ -86,6 +163,48 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
         setPendingNavigation(null);
     };
 
+    // ── Message bubble renderer ───────────────────────────
+    const renderMessageContent = (msg: any, isOwn: boolean) => {
+        if (msg.type === 'image' && msg.fileUrl) {
+            return (
+                <div>
+                    <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={msg.fileUrl}
+                            alt={msg.fileName || 'Image'}
+                            className="max-w-[220px] rounded-lg mb-1 cursor-pointer hover:opacity-90 transition-opacity"
+                        />
+                    </a>
+                    {msg.content && msg.content !== msg.fileName && (
+                        <p className="text-sm mt-1">{msg.content}</p>
+                    )}
+                </div>
+            );
+        }
+
+        if (msg.type === 'file' && msg.fileUrl) {
+            return (
+                <a
+                    href={msg.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg max-w-[220px] transition-colors ${
+                        isOwn ? 'bg-blue-700 hover:bg-blue-800' : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                >
+                    <FileText className={`w-5 h-5 shrink-0 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`} />
+                    <span className={`text-sm font-medium truncate ${isOwn ? 'text-white' : 'text-gray-700'}`}>
+                        {msg.fileName || msg.content || 'File'}
+                    </span>
+                </a>
+            );
+        }
+
+        // Default: plain text
+        return <p className="text-sm">{msg.content}</p>;
+    };
+
     return (
         <div className="flex-1 flex flex-col h-full bg-gray-50">
             {/* Header */}
@@ -114,13 +233,12 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
                             <MoreVertical size={20} />
                         </button>
                     )}
-                    {/* Add to Watchlist button logic here for Investor */}
                 </div>
             </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {messages.map((msg, index) => {
+                {messages.map((msg: any, index: number) => {
                     const isOwn = msg.sender.user === userId || (typeof msg.sender.user === 'object' && (msg.sender.user as any)._id === userId);
                     return (
                         <div key={index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
@@ -128,9 +246,9 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
                                 className={`max-w-[70%] px-4 py-2 rounded-2xl shadow-sm ${isOwn
                                     ? 'bg-blue-600 text-white rounded-br-none'
                                     : 'bg-white text-gray-800 rounded-bl-none border border-gray-200'
-                                    }`}
+                                }`}
                             >
-                                <p className="text-sm">{msg.content}</p>
+                                {renderMessageContent(msg, isOwn)}
                                 <span className={`text-[10px] block mt-1 ${isOwn ? 'text-blue-100' : 'text-gray-400'}`}>
                                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
@@ -141,26 +259,64 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
                 <div ref={messagesEndRef} />
             </div>
 
+            {/* File Preview Strip */}
+            {filePreview && (
+                <div className="px-4 pb-2 bg-white border-t border-gray-100">
+                    <div className="flex items-center gap-3 mt-2 p-2 bg-gray-50 rounded-xl border border-gray-200">
+                        {filePreview.previewUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={filePreview.previewUrl} alt="preview" className="w-12 h-12 object-cover rounded-lg shrink-0" />
+                        ) : (
+                            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                                <FileText className="w-6 h-6 text-blue-500" />
+                            </div>
+                        )}
+                        <span className="flex-1 text-sm text-gray-700 font-medium truncate">{filePreview.file.name}</span>
+                        <button onClick={clearFilePreview} className="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Input */}
             <div className="p-4 bg-white border-t border-gray-200">
                 <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-                    <button type="button" className="p-2 text-gray-400 hover:text-gray-600">
+                    {/* Hidden File Input */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
+                        onChange={handleFileSelect}
+                    />
+
+                    {/* Paperclip Button */}
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="p-2 text-gray-400 hover:text-blue-600 transition-colors disabled:opacity-40"
+                        title="Attach file"
+                    >
                         <Paperclip size={20} />
                     </button>
+
                     <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Type a message..."
+                        placeholder={filePreview ? 'Add a caption (optional)…' : 'Type a message…'}
                         className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 px-4"
                     />
+
                     <button
                         type="submit"
-                        disabled={!newMessage.trim()}
+                        disabled={isUploading || (!newMessage.trim() && !filePreview)}
                         className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors"
                     >
-                        <Send size={20} />
+                        {isUploading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
                     </button>
                 </form>
             </div>
@@ -181,16 +337,13 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
                             <button
                                 onClick={async () => {
                                     if (!activeConversation) return;
-
                                     try {
-                                        // Update status in specific Conversation API
                                         await fetch(`/api/chat/conversations/${activeConversation._id}`, {
                                             method: 'PATCH',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ dealStatus: 'discarded' })
                                         });
                                         handleNavigationComplete();
-                                        // Optionally show feedback
                                         alert("Conversation marked as discarded.");
                                     } catch (err) {
                                         console.error(err);
@@ -204,25 +357,19 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
                             <button
                                 onClick={async () => {
                                     if (!activeConversation) return;
-
                                     try {
-                                        // Update status
                                         await fetch(`/api/chat/conversations/${activeConversation._id}`, {
                                             method: 'PATCH',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ dealStatus: 'completed' })
                                         });
-
                                         handleNavigationComplete();
-
                                         const pitchId = typeof activeConversation.pitch === 'object' ? activeConversation.pitch._id : activeConversation.pitch;
                                         const investor = activeConversation.participants.find((p: any) => p.userModel === 'Investor')?.user;
                                         const investorId = typeof investor === 'object' ? investor._id : investor;
-
                                         if (userRole === 'entrepreneur') {
                                             window.location.href = `/entrepreneur_dashboard/deals/create?pitchId=${pitchId}&investorId=${investorId}&entrepreneurId=${userId}`;
                                         }
-
                                     } catch (err) {
                                         console.error(err);
                                     }

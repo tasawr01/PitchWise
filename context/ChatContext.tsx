@@ -71,6 +71,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         });
 
         socketInstance.on('receive_message', (message: Message) => {
+            console.log('Received message:', message);
             setMessages((prev) => [...prev, message]);
 
             // Update conversation list preview if needed

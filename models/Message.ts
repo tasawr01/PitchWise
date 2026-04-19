@@ -27,6 +27,14 @@ const MessageSchema = new mongoose.Schema({
         enum: ['text', 'image', 'system', 'file'],
         default: 'text'
     },
+    fileUrl: {
+        type: String,
+        default: null
+    },
+    fileName: {
+        type: String,
+        default: null
+    },
     readBy: [{
         type: mongoose.Schema.Types.ObjectId,
         refPath: 'sender.userModel'

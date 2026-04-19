@@ -1,5 +1,4 @@
 import { getPitchById, checkWatchlistStatus } from '@/app/actions/investor';
-// getSession import removed
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import Image from 'next/image';
@@ -8,10 +7,6 @@ import { notFound, redirect } from 'next/navigation';
 import { formatCurrency } from '@/lib/utils';
 import WatchlistButton from '@/components/investor/WatchlistButton';
 import TalkNowButton from '@/components/investor/TalkNowButton';
-import ProposeDealButton from '@/components/investor/ProposeDealButton';
-import { FileText, Download, ExternalLink, PlayCircle, Users, BarChart3, ShieldCheck, Globe, Calendar } from 'lucide-react';
-import dbConnect from '@/lib/db';
-import Investor from '@/models/Investor';
 
 // Helper to get user securely
 async function getUser() {
@@ -36,284 +31,239 @@ export default async function PitchDetailPage({ params }: { params: Promise<{ id
 
     const pitch = await getPitchById(id);
 
-    // If pitch wasn't found or status is not approved, 404
     if (!pitch || pitch.status !== 'approved') {
         notFound();
     }
 
     const isWatched = await checkWatchlistStatus(user.id as string, id);
 
+    // Helper to render a field if it exists
+    const Field = ({ label, value }: { label: string; value: any }) => {
+        const displayValue = value ? value : <span className="text-gray-400 italic font-normal">Not Provided</span>;
+        return (
+            <div className="mb-4">
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{label}</h4>
+                <p className="text-gray-900 text-base whitespace-pre-wrap">{displayValue}</p>
+            </div>
+        );
+    };
+
+    const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+        <section className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm mb-8">
+            <h3 className="text-xl font-bold text-[#0B2C4A] mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+                {title}
+            </h3>
+            {children}
+        </section>
+    );
+
     return (
-        <div className="max-w-7xl mx-auto pb-12">
-            {/* Header / Hero Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-                <div className="relative h-64 bg-slate-900">
-                    {/* Cover Image Placeholder or Blur */}
-                    {pitch.logoUrl && (
-                        <div className="absolute inset-0 opacity-20">
-                            <Image src={pitch.logoUrl} alt="Cover" fill className="object-cover blur-sm" />
-                        </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+        <div className="max-w-5xl mx-auto pb-20">
+            {/* Header / Nav */}
+            <div className="mb-8 flex justify-between items-center">
+                <Link
+                    href="/investor_dashboard/explore"
+                    className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#0B2C4A] transition-colors"
+                >
+                    <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Explore
+                </Link>
 
-                    <div className="absolute bottom-6 left-6 md:left-10 flex items-end gap-6 text-white">
-                        <div className="relative w-24 h-24 rounded-xl bg-white p-2 shadow-lg shrink-0">
-                            {pitch.logoUrl ? (
-                                <Image src={pitch.logoUrl} alt={pitch.businessName} fill className="object-contain p-2" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                    <Globe className="w-10 h-10" />
-                                </div>
-                            )}
-                        </div>
-                        <div className="mb-1">
-                            <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-3xl font-bold">{pitch.businessName}</h1>
-                                <span className="bg-blue-500/20 text-blue-200 border border-blue-500/30 px-3 py-0.5 rounded-full text-sm font-medium backdrop-blur-md">
-                                    {pitch.industry}
-                                </span>
-                            </div>
-                            <p className="text-lg text-gray-200 max-w-2xl text-shadow">{pitch.title}</p>
-                        </div>
-                    </div>
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                    <WatchlistButton investorId={user.id as string} pitchId={pitch._id} initialIsWatched={isWatched} />
+                    <TalkNowButton
+                        pitchId={pitch._id}
+                        entrepreneurId={pitch.entrepreneur._id}
+                        investorId={user.id as string}
+                    />
                 </div>
+            </div>
 
-                <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-white">
-                    <div className="flex gap-8 text-center md:text-left">
-                        <div>
-                            <span className="block text-sm text-gray-500 uppercase tracking-wide">Ask Amount</span>
-                            <span className="block text-2xl font-bold text-[#0B2C4A]">Rs. {formatCurrency(pitch.amountRequired)}</span>
-                        </div>
-                        <div className="w-px bg-gray-200 h-12 hidden md:block" />
-                        <div>
-                            <span className="block text-sm text-gray-500 uppercase tracking-wide">Equity Offered</span>
-                            <span className="block text-2xl font-bold text-[#0B2C4A]">{pitch.equityOffered}%</span>
-                        </div>
-                        <div className="w-px bg-gray-200 h-12 hidden md:block" />
-                        <div>
-                            <span className="block text-sm text-gray-500 uppercase tracking-wide">Valuation</span>
-                            <span className="block text-2xl font-bold text-green-600">Rs. {formatCurrency(pitch.valuation)}</span>
-                        </div>
+            {/* Hero Section */}
+            <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-gray-100 mb-10 relative overflow-hidden">
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                    {/* Logo */}
+                    <div className="w-32 h-32 flex-shrink-0 bg-gray-50 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden relative">
+                        {pitch.logoUrl ? (
+                            <Image src={pitch.logoUrl} alt="Logo" fill className="object-cover" />
+                        ) : (
+                            <span className="text-gray-300 font-bold text-4xl">{pitch.businessName?.[0]}</span>
+                        )}
                     </div>
 
-                    import TalkNowButton from '@/components/investor/TalkNowButton';
+                    <div className="flex-1">
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-[#0B2C4A] tracking-tight mb-2">{pitch.businessName}</h1>
+                        <p className="text-xl text-gray-500 font-medium mb-6">{pitch.title}</p>
 
-                    // ... (existing imports, adjusted below)
-
-                    <div className="flex gap-4">
-                        <WatchlistButton investorId={user.id as string} pitchId={pitch._id} initialIsWatched={isWatched} />
-                        <TalkNowButton
-                            pitchId={pitch._id}
-                            entrepreneurId={pitch.entrepreneur._id}
-                            investorId={user.id as string}
-                        />
-                        <ProposeDealButton
-                            pitchId={pitch._id}
-                            investorId={user.id as string}
-                            entrepreneurId={pitch.entrepreneur._id}
-                            defaultAmount={pitch.amountRequired}
-                            defaultEquity={pitch.equityOffered}
-                        />
+                        <div className="flex flex-wrap gap-4">
+                            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
+                                <span className="block text-xs font-bold text-blue-800 uppercase">Industry</span>
+                                <span className="text-blue-900 font-semibold">{pitch.industry}</span>
+                            </div>
+                            <div className="bg-purple-50 px-4 py-2 rounded-lg border border-purple-100">
+                                <span className="block text-xs font-bold text-purple-800 uppercase">Stage</span>
+                                <span className="text-purple-900 font-semibold">{pitch.stage}</span>
+                            </div>
+                            <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-100">
+                                <span className="block text-xs font-bold text-green-800 uppercase">Seeking</span>
+                                <span className="text-green-900 font-semibold">Rs. {formatCurrency(pitch.amountRequired)}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Main Pitch Content */}
-                <div className="lg:col-span-2 space-y-8">
+                {/* Main Content (Left 2/3) */}
+                <div className="lg:col-span-2">
 
-                    {/* Problem & Solution */}
-                    <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                        <h2 className="text-xl font-bold text-[#0B2C4A] mb-6 flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5 text-blue-500" />
-                            Problem & Solution
-                        </h2>
-                        <div className="space-y-6">
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-2">The Problem</h3>
-                                <p className="text-gray-600 leading-relaxed">{pitch.problemStatement}</p>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900 mb-2">Our Solution</h3>
-                                <p className="text-gray-600 leading-relaxed">{pitch.solution}</p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Target Customer</h4>
-                                    <p className="text-sm text-gray-600">{pitch.targetCustomer}</p>
-                                </div>
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Market Size</h4>
-                                    <p className="text-sm text-gray-600">{pitch.marketSizeLocation}</p>
-                                </div>
+                    <Section title="The Problem & Solution">
+                        <div className="grid grid-cols-1 gap-6">
+                            <Field label="Problem Statement" value={pitch.problemStatement} />
+                            <Field label="Urgency" value={pitch.problemUrgency} />
+                            <Field label="Target Customer" value={pitch.targetCustomer} />
+                            <div className="h-px bg-gray-100 my-2"></div>
+                            <Field label="Solution" value={pitch.solution} />
+                            <Field label="How it Works" value={pitch.solutionMechanism} />
+                            <Field label="Unique Selling Point" value={pitch.uniqueSellingPoint} />
+                        </div>
+                    </Section>
+
+                    <Section title="The Market">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Field label="Market Size & Location" value={pitch.marketSizeLocation} />
+                            <Field label="Market Growth" value={pitch.marketGrowth} />
+                            <div className="col-span-1 md:col-span-2">
+                                <Field label="Competitors" value={pitch.competitors} />
+                                <Field label="Current Alternatives" value={pitch.currentAlternatives} />
                             </div>
                         </div>
-                    </section>
+                    </Section>
 
-                    {/* Business Details */}
-                    <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                        <h2 className="text-xl font-bold text-[#0B2C4A] mb-6 flex items-center gap-2">
-                            <BarChart3 className="w-5 h-5 text-blue-500" />
-                            Business Details
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                            <div>
-                                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Revenue Model</h3>
-                                <p className="text-gray-800">{pitch.revenueModel}</p>
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Stage</h3>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                    {pitch.stage}
-                                </span>
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Competitors</h3>
-                                <p className="text-gray-800">{pitch.competitors}</p>
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Unique Selling Point</h3>
-                                <p className="text-gray-800">{pitch.uniqueSellingPoint}</p>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 pt-6 border-t border-gray-100">
-                            <h3 className="font-semibold text-gray-900 mb-3">Traction</h3>
-                            <p className="text-gray-600 italic bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
-                                "{pitch.traction}"
-                            </p>
-                        </div>
-                    </section>
-
-                    {/* Team */}
-                    <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                        <h2 className="text-xl font-bold text-[#0B2C4A] mb-6 flex items-center gap-2">
-                            <Users className="w-5 h-5 text-blue-500" />
-                            The Team
-                        </h2>
-                        <div className="flex items-start gap-4">
-                            <div className="relative w-16 h-16 bg-gray-200 rounded-full overflow-hidden shrink-0">
-                                {pitch.entrepreneur?.profilePhoto ? (
-                                    <Image src={pitch.entrepreneur.profilePhoto} alt="Founder" fill className="object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-500 text-xl font-bold">
-                                        {pitch.entrepreneur?.fullName?.charAt(0)}
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-lg text-gray-900">{pitch.entrepreneur?.fullName}</h3>
-                                <p className="text-sm text-gray-500 mb-3">Founder</p>
-                                <p className="text-gray-600 text-sm leading-relaxed">
-                                    {pitch.founderBackground}
-                                </p>
-                            </div>
+                    <Section title="Business & Execution">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Field label="Revenue Model" value={pitch.revenueModel} />
+                            <Field label="Pricing Model" value={pitch.pricingModel} />
+                            <Field label="Rev/Customer" value={pitch.revenuePerCustomer} />
                         </div>
                         <div className="mt-6">
-                            <h4 className="text-sm font-semibold text-gray-900 mb-2">Why this team?</h4>
-                            <p className="text-gray-600 text-sm">{pitch.teamFit}</p>
+                            <Field label="Traction / Validation" value={pitch.traction} />
+                            <Field label="Customer Validation" value={pitch.customerValidation} />
                         </div>
-                    </section>
+                        <div className="mt-6">
+                            <Field label="Key Technology" value={pitch.keyTechnology} />
+                            <Field label="Moat (Defensibility)" value={pitch.moat} />
+                            <Field label="Risks" value={pitch.risks} />
+                            <Field label="Risk Mitigation" value={pitch.riskMitigation} />
+                        </div>
+                    </Section>
+
+                    <Section title="The Team">
+                        <Field label="Founder Background" value={pitch.founderBackground} />
+                        <Field label="Team Fit" value={pitch.teamFit} />
+                    </Section>
                 </div>
 
-                {/* Right Column: Documents & Actions */}
-                <div className="lg:col-span-1 space-y-6">
+                {/* Sidebar (Right 1/3) */}
+                <div className="space-y-8">
 
-                    {/* Documents */}
-                    <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <h3 className="font-bold text-[#0B2C4A] mb-4 flex items-center gap-2">
-                            <FileText className="w-4 h-4" /> Documents
-                        </h3>
-                        <div className="space-y-3">
-                            {pitch.pitchDeckUrl ? (
-                                <a
-                                    href={pitch.pitchDeckUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-red-100 text-red-600 rounded">
-                                            <FileText className="w-4 h-4" />
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">Pitch Deck</span>
-                                    </div>
-                                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500" />
-                                </a>
-                            ) : (
-                                <div className="text-sm text-gray-400 italic">No Pitch Deck uploaded</div>
-                            )}
-
-                            {/* Financials - Placeholder if not array, need to handle Array vs String based on Schema */}
-                            {pitch.financialsUrls && pitch.financialsUrls.length > 0 && (
-                                <div className="mt-2">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Financials</p>
-                                    {pitch.financialsUrls.map((url: string, idx: number) => (
-                                        <a
-                                            key={idx}
-                                            href={url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group mb-2"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-green-100 text-green-600 rounded">
-                                                    <BarChart3 className="w-4 h-4" />
-                                                </div>
-                                                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">Financial Doc {idx + 1}</span>
-                                            </div>
-                                            <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500" />
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
+                    {/* The Deal Card */}
+                    <div className="bg-[#0B2C4A] rounded-2xl p-6 text-white shadow-lg">
+                        <h3 className="text-xl font-bold mb-6 border-b border-white/20 pb-4">The Deal</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <span className="block text-xs font-bold text-gray-300 uppercase">Valuation</span>
+                                <span className="text-2xl font-bold">Rs. {pitch.valuation ? formatCurrency(pitch.valuation) : 'N/A'}</span>
+                            </div>
+                            <div>
+                                <span className="block text-xs font-bold text-gray-300 uppercase">Equity Offered</span>
+                                <span className="text-2xl font-bold">{pitch.equityOffered}%</span>
+                            </div>
+                            <div>
+                                <span className="block text-xs font-bold text-gray-300 uppercase">Amount Required</span>
+                                <span className="text-2xl font-bold text-green-400">Rs. {formatCurrency(pitch.amountRequired)}</span>
+                            </div>
                         </div>
-                    </section>
+                        <div className="mt-6 pt-4 border-t border-white/20">
+                            <p className="text-xs font-bold text-gray-300 uppercase mb-2">Use of Funds</p>
+                            <p className="text-sm text-gray-200">{pitch.useOfFunds}</p>
+                        </div>
+                    </div>
 
-                    {/* Media / Demo */}
-                    {pitch.demoUrl && (
-                        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="font-bold text-[#0B2C4A] mb-4 flex items-center gap-2">
-                                <PlayCircle className="w-4 h-4" /> Demo / Video
-                            </h3>
-                            <a
-                                href={pitch.demoUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block relative aspect-video bg-gray-900 rounded-lg overflow-hidden group"
-                            >
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-red-600 transition-colors">
-                                        <PlayCircle className="w-6 h-6 text-white" />
-                                    </div>
-                                </div>
-                                {/* Thumbnail logic could go here if we had one */}
-                                <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 text-white text-xs text-center">
-                                    Click to watch demo
+                    {/* Financials Card */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-bold text-[#0B2C4A] mb-4">Financial Projections</h3>
+                        <div className="space-y-4">
+                            <Field label="Monthly Expenses" value={pitch.monthlyExpenses} />
+                            <Field label="Break-Even Point" value={pitch.breakEvenPoint} />
+                            <Field label="Profitability Timeline" value={pitch.profitabilityTimeline} />
+                        </div>
+                    </div>
+
+                    {/* Vision Card */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-bold text-[#0B2C4A] mb-4">Vision & Exit</h3>
+                        <div className="space-y-4">
+                            <Field label="5-Year Vision" value={pitch.vision} />
+                            <Field label="Exit Plan" value={pitch.exitPlan} />
+                            <Field label="Plan B (No Investment)" value={pitch.noInvestmentPlan} />
+                        </div>
+                    </div>
+
+                    {/* Documents List */}
+                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                        <h3 className="text-lg font-bold text-[#0B2C4A] mb-4">Documents</h3>
+                        <div className="space-y-3">
+                            <a href={pitch.pitchDeckUrl} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                <span className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 mr-3 group-hover:bg-red-100 transition-colors">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                </span>
+                                <div>
+                                    <span className="block text-sm font-bold text-gray-900">Pitch Deck</span>
+                                    <span className="text-xs text-gray-500">PDF Document</span>
                                 </div>
                             </a>
-                        </section>
-                    )}
 
-                    {/* Funding Info */}
-                    <section className="bg-[#0B2C4A] text-white rounded-xl shadow-sm p-6">
-                        <h3 className="font-bold mb-4">Investment Terms</h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                                <span className="text-gray-300 text-sm">Min Investment</span>
-                                <span className="font-medium">TBD</span>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                                <span className="text-gray-300 text-sm">Use of Funds</span>
-                                <span className="font-medium text-right text-xs max-w-[150px] truncate">{pitch.useOfFunds}</span>
-                            </div>
-                            <div className="flex justify-between items-center pt-2">
-                                <span className="text-gray-300 text-sm">Exit Plan</span>
-                                <span className="font-medium text-right text-xs">{pitch.exitPlan}</span>
-                            </div>
+                            {pitch.demoUrl && (
+                                <a href={pitch.demoUrl} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                    <span className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 mr-3 group-hover:bg-blue-100 transition-colors">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
+                                    <div>
+                                        <span className="block text-sm font-bold text-gray-900">Demo / Prototype</span>
+                                        <span className="text-xs text-gray-500">View File/Link</span>
+                                    </div>
+                                </a>
+                            )}
+
+                            {pitch.financialsUrls && pitch.financialsUrls.length > 0 && pitch.financialsUrls.map((url: string, i: number) => (
+                                <a key={i} href={url} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                    <span className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-500 mr-3 group-hover:bg-green-100 transition-colors">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                    </span>
+                                    <div>
+                                        <span className="block text-sm font-bold text-gray-900">Financials {i + 1}</span>
+                                        <span className="text-xs text-gray-500">Document</span>
+                                    </div>
+                                </a>
+                            ))}
+
+                            {pitch.tractionProofUrls && pitch.tractionProofUrls.length > 0 && pitch.tractionProofUrls.map((url: string, i: number) => (
+                                <a key={i} href={url} target="_blank" className="flex items-center p-3 bg-white rounded-xl border border-gray-200 hover:border-[#0B2C4A] transition-all group">
+                                    <span className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 mr-3 group-hover:bg-purple-100 transition-colors">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
+                                    <div>
+                                        <span className="block text-sm font-bold text-gray-900">Traction Proof {i + 1}</span>
+                                        <span className="text-xs text-gray-500">Document</span>
+                                    </div>
+                                </a>
+                            ))}
                         </div>
-                    </section>
-
+                    </div>
                 </div>
             </div>
         </div>

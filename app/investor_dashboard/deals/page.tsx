@@ -1,9 +1,8 @@
 import { getInvestorDeals } from '@/app/actions/investor';
-// getSession import removed
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
-import DocumentCard from '@/components/investor/DocumentCard'; // We'll create this helper
 import { redirect } from 'next/navigation';
+import DealsTabView from '@/components/investor/DealsTabView';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,38 +35,7 @@ export default async function DealsPage() {
                 <p className="text-gray-500 mt-2 text-lg">Manage your investment contracts and agreements.</p>
             </div>
 
-            <div className="space-y-8">
-                <section>
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Pending Review</h2>
-                    {pendingDeals.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Map deals to a card component */}
-                            {pendingDeals.map((deal: any) => (
-                                <DocumentCard key={deal._id} deal={deal} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500 text-sm">
-                            No pending deals to review.
-                        </div>
-                    )}
-                </section>
-
-                <section>
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Past Deals</h2>
-                    {pastDeals.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {pastDeals.map((deal: any) => (
-                                <DocumentCard key={deal._id} deal={deal} isReadOnly />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500 text-sm">
-                            No past deal history.
-                        </div>
-                    )}
-                </section>
-            </div>
+            <DealsTabView pendingDeals={pendingDeals} pastDeals={pastDeals} />
         </div>
     );
 }

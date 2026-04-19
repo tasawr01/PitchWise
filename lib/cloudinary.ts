@@ -12,9 +12,10 @@ export const uploadToCloudinary = (buffer: Buffer, folder: string = 'pitchwise',
             {
                 folder: folder,
                 resource_type: 'auto',
-                use_filename: true, // Use the provided filename
-                unique_filename: true, // Append random chars to avoid collisions
-                filename_override: filename // Explicitly set filename for detection
+                use_filename: true,
+                unique_filename: true,
+                filename_override: filename,
+                timeout: 120000, // 2 minutes — prevents HTTP 499 TimeoutError on slow connections
             },
             (error, result) => {
                 if (error) {

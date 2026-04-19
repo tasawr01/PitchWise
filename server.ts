@@ -40,7 +40,7 @@ app.prepare().then(async () => {
             // data matches Message model structure + conversationId
             // We can save to DB here for immediate persistence and then broadcast
             try {
-                const { conversationId, sender, content, type } = data;
+                const { conversationId, sender, content, type, fileUrl, fileName } = data;
 
                 // Create message
                 const newMessage = await Message.create({
@@ -48,6 +48,8 @@ app.prepare().then(async () => {
                     sender,
                     content,
                     type,
+                    fileUrl: fileUrl || null,
+                    fileName: fileName || null,
                     readBy: [sender.user] // Sender has read it
                 });
 
