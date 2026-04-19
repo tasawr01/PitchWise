@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { useChat } from '@/context/ChatContext';
 
 const menuItems = [
     {
@@ -50,6 +51,7 @@ interface SidebarProps {
 
 export default function InvestorSidebar({ isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
+    const { openSupportDrawer } = useChat();
 
     return (
         <>
@@ -101,7 +103,13 @@ export default function InvestorSidebar({ isOpen, onClose }: SidebarProps) {
                         <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs">I</div>
                         <div>
                             <p className="text-sm font-medium">Investor Panel</p>
-                            <button className="text-xs text-gray-400 hover:text-white">Support</button>
+                            <Link 
+                                href="/support-chat"
+                                onClick={() => onClose()}
+                                className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                            >
+                                Contact Support
+                            </Link>
                         </div>
                     </div>
                 </div>

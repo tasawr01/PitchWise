@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Entrepreneur from '@/models/Entrepreneur';
 import Investor from '@/models/Investor';
+import Admin from '@/models/Admin';
 import { jwtVerify } from 'jose';
 
 export async function GET(req: Request) {
@@ -29,6 +30,8 @@ export async function GET(req: Request) {
             user = await Entrepreneur.findById(payload.id).select('-password');
         } else if (payload.role === 'investor') {
             user = await Investor.findById(payload.id).select('-password');
+        } else if (payload.role === 'admin') {
+            user = await Admin.findById(payload.id).select('-password');
         }
 
         if (!user) {

@@ -14,7 +14,7 @@ async function getUser() {
         const { payload } = await jwtVerify(token, secret);
         if (payload.role !== 'entrepreneur') return null;
         await dbConnect();
-        const user = await Entrepreneur.findById(payload.id).select('profilePhoto fullName').lean();
+        const user = await Entrepreneur.findById(payload.id).select('_id profilePhoto fullName').lean();
         return JSON.parse(JSON.stringify(user));
     } catch {
         return null;

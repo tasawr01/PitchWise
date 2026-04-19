@@ -6,7 +6,6 @@ import LogoutButton from '@/components/LogoutButton';
 import NotificationBell from '@/components/NotificationBell';
 import Image from 'next/image';
 import WelcomeGuidanceModal from './WelcomeGuidanceModal';
-
 import Link from 'next/link';
 
 interface LayoutProps {

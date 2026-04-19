@@ -16,7 +16,12 @@ const ConversationSchema = new mongoose.Schema({
     pitch: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Pitch',
-        required: true
+        required: false
+    },
+    type: {
+        type: String,
+        enum: ['pitch', 'support'],
+        default: 'pitch'
     },
     lastMessage: {
         type: mongoose.Schema.Types.ObjectId,
@@ -42,4 +47,9 @@ const ConversationSchema = new mongoose.Schema({
 // Ensure unique conversation per pair per pitch? 
 // Optional: ConversationSchema.index({ pitch: 1, 'participants.user': 1 }, { unique: true });
 
-export default mongoose.models.Conversation || mongoose.model('Conversation', ConversationSchema);
+// To avoid caching issues during development with HMR
+if (mongoose.models.Conversation) {
+    delete mongoose.models.Conversation;
+}
+
+export default mongoose.model('Conversation', ConversationSchema);

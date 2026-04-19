@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useChat } from '@/context/ChatContext';
 import { useRouter } from 'next/navigation';
 
-export default function ChatSidebar({ userId, userRole }: { userId: string, userRole: string }) {
+export default function ChatSidebar({ userId, userRole, fetchUrl = '/api/chat/conversations', basePath = '/chat' }: { userId: string, userRole: string, fetchUrl?: string, basePath?: string }) {
     const { conversations, setConversations, setActiveConversation, activeConversation, interceptNavigation } = useChat();
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +13,7 @@ export default function ChatSidebar({ userId, userRole }: { userId: string, user
         // Fetch conversations
         const fetchConversations = async () => {
             try {
-                const res = await fetch('/api/chat/conversations');
+                const res = await fetch(fetchUrl);
                 const data = await res.json();
                 if (data.conversations) {
                     setConversations(data.conversations);
@@ -38,11 +38,11 @@ export default function ChatSidebar({ userId, userRole }: { userId: string, user
         if (userRole === 'entrepreneur') {
             interceptNavigation(() => {
                 setActiveConversation(conversation);
-                router.push(`/chat?conversationId=${conversation._id}`);
+                router.push(`${basePath}?conversationId=${conversation._id}`);
             });
         } else {
             setActiveConversation(conversation);
-            router.push(`/chat?conversationId=${conversation._id}`);
+            router.push(`${basePath}?conversationId=${conversation._id}`);
         }
     };
 
@@ -54,6 +54,8 @@ export default function ChatSidebar({ userId, userRole }: { userId: string, user
                         onClick={() => {
                             if (userRole === 'entrepreneur') {
                                 interceptNavigation(() => router.push('/entrepreneur_dashboard'));
+                            } else if (userRole === 'admin') {
+                                router.push('/admin/dashboard');
                             } else {
                                 router.push('/investor_dashboard');
                             }

@@ -21,6 +21,7 @@ interface Conversation {
     pitch: any;
     lastMessage?: any;
     updatedAt: string;
+    type?: string;
 }
 
 interface ChatContextType {
@@ -39,6 +40,9 @@ interface ChatContextType {
     pendingNavigation: (() => void) | null;
     setPendingNavigation: React.Dispatch<React.SetStateAction<(() => void) | null>>;
     interceptNavigation: (action: () => void) => void;
+    isSupportDrawerOpen: boolean;
+    setIsSupportDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    openSupportDrawer: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -53,6 +57,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     // UI States for intercepting navigation
     const [isDealPopupOpen, setIsDealPopupOpen] = useState(false);
     const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+
+    // Support Drawer State
+    const [isSupportDrawerOpen, setIsSupportDrawerOpen] = useState(false);
 
     // Initialize socket
     useEffect(() => {
@@ -121,6 +128,27 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const openSupportDrawer = async () => {
+        console.log('Opening support drawer...');
+        try {
+            setIsLoading(true);
+            const res = await fetch('/api/support/conversation');
+            console.log('Support conversation fetch status:', res.status);
+            const data = await res.json();
+            if (data.conversation) {
+                console.log('Support conversation found/created:', data.conversation._id);
+                setActiveConversation(data.conversation);
+                setIsSupportDrawerOpen(true);
+            } else {
+                console.error('No conversation returned from support API', data);
+            }
+        } catch (error) {
+            console.error('Failed to open support drawer', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const value = {
         socket,
         activeConversation,
@@ -147,7 +175,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             } else {
                 action();
             }
-        }
+        },
+        isSupportDrawerOpen,
+        setIsSupportDrawerOpen,
+        openSupportDrawer
     };
 
     return (

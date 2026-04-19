@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from '@/context/ChatContext';
 import { Send, Paperclip, MoreVertical, FileText, ImageIcon, X, Loader2 } from 'lucide-react';
 
-export default function ChatWindow({ userId, userRole }: { userId: string, userRole: string }) {
+export default function ChatWindow({ userId, userRole, hideHeader = false }: { userId: string, userRole: string, hideHeader?: boolean }) {
     const {
         activeConversation,
         messages,
@@ -96,7 +96,7 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
                     conversationId: activeConversation._id,
                     sender: {
                         user: userId,
-                        userModel: userRole === 'investor' ? 'Investor' : 'Entrepreneur',
+                        userModel: userRole === 'investor' ? 'Investor' : userRole === 'entrepreneur' ? 'Entrepreneur' : 'Admin',
                     },
                     content: newMessage.trim() || fileName,  // fallback caption = filename
                     type: isImage ? 'image' : 'file',
@@ -121,7 +121,7 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
             conversationId: activeConversation._id,
             sender: {
                 user: userId,
-                userModel: userRole === 'investor' ? 'Investor' : 'Entrepreneur',
+                userModel: userRole === 'investor' ? 'Investor' : userRole === 'entrepreneur' ? 'Entrepreneur' : 'Admin',
             },
             content: newMessage,
             type: 'text',
@@ -208,33 +208,35 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
     return (
         <div className="flex-1 flex flex-col h-full bg-gray-50">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200 bg-white flex justify-between items-center shadow-sm">
-                <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
-                        {otherParticipant?.profilePhoto ? (
-                            <img src={otherParticipant.profilePhoto} alt={otherParticipant.fullName} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-600 font-bold">
-                                {otherParticipant?.fullName?.charAt(0)}
-                            </div>
+            {!hideHeader && (activeConversation.type !== 'support' || userRole === 'admin') && (
+                <div className="px-6 py-4 border-b border-gray-200 bg-white flex justify-between items-center shadow-sm">
+                    <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
+                            {otherParticipant?.profilePhoto ? (
+                                <img src={otherParticipant.profilePhoto} alt={otherParticipant.fullName} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-600 font-bold">
+                                    {otherParticipant?.fullName?.charAt(0)}
+                                </div>
+                            )}
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900">{otherParticipant?.fullName}</h2>
+                            <p className="text-sm text-blue-600 font-medium">{activeConversation.pitch?.businessName || activeConversation.pitch?.title || 'Pitch Discussion'}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        {userRole === 'entrepreneur' && (
+                            <button
+                                onClick={() => setIsDealPopupOpen(true)}
+                                className="p-2 hover:bg-gray-100 rounded-full text-gray-600"
+                            >
+                                <MoreVertical size={20} />
+                            </button>
                         )}
                     </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-gray-900">{otherParticipant?.fullName}</h2>
-                        <p className="text-sm text-blue-600 font-medium">{activeConversation.pitch?.businessName || activeConversation.pitch?.title || 'Pitch Discussion'}</p>
-                    </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                    {userRole === 'entrepreneur' && (
-                        <button
-                            onClick={() => setIsDealPopupOpen(true)}
-                            className="p-2 hover:bg-gray-100 rounded-full text-gray-600"
-                        >
-                            <MoreVertical size={20} />
-                        </button>
-                    )}
-                </div>
-            </div>
+            )}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -292,15 +294,17 @@ export default function ChatWindow({ userId, userRole }: { userId: string, userR
                     />
 
                     {/* Paperclip Button */}
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="p-2 text-gray-400 hover:text-blue-600 transition-colors disabled:opacity-40"
-                        title="Attach file"
-                    >
-                        <Paperclip size={20} />
-                    </button>
+                    {activeConversation.type !== 'support' && (
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors disabled:opacity-40"
+                            title="Attach file"
+                        >
+                            <Paperclip size={20} />
+                        </button>
+                    )}
 
                     <input
                         type="text"

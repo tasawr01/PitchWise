@@ -6,6 +6,8 @@ import LogoutButton from '@/components/LogoutButton';
 import NotificationBell from '@/components/NotificationBell';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 interface LayoutProps {
     children: React.ReactNode;
