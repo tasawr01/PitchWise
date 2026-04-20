@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useChat } from '@/context/ChatContext';
 
+
 const menuItems = [
     {
         name: 'Overview', href: '/entrepreneur_dashboard', icon: (
@@ -42,6 +43,7 @@ interface SidebarProps {
 export default function EntrepreneurSidebar({ isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
     const { openSupportDrawer } = useChat();
+
 
     return (
         <>
@@ -89,13 +91,15 @@ export default function EntrepreneurSidebar({ isOpen, onClose }: SidebarProps) {
                         <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs">E</div>
                         <div>
                             <p className="text-sm font-medium">My Workspace</p>
-                            <Link 
-                                href="/support-chat"
-                                onClick={() => onClose()}
+                            <button 
+                                onClick={() => {
+                                    onClose();
+                                    openSupportDrawer();
+                                }}
                                 className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
                             >
                                 Contact Support
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>
