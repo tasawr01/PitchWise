@@ -68,9 +68,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         // But if next.js is just serving frontend and custom server is separate...
         // With custom server, `window.location.origin` should work.
 
-        const socketInstance = io({
-            path: '/socket.io', // Default
-            // add auth query if needed: query: { token }
+        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+        
+        const socketInstance = io(socketUrl, {
+            path: '/socket.io',
+            transports: ['websocket', 'polling'], // Prioritize websocket
         });
 
         socketInstance.on('connect', () => {
