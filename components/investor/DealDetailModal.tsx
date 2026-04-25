@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { updateDealStatus } from '@/app/actions/investor';
 import { formatCurrency } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 import {
     X,
     CheckCircle,
@@ -27,18 +28,29 @@ interface DealDetailModalProps {
 }
 
 export default function DealDetailModal({ deal, isReadOnly = false, onClose }: DealDetailModalProps) {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [action, setAction] = useState<'approve' | 'reject' | null>(null);
     const [done, setDone] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleAction = async (status: 'approved' | 'rejected') => {
         setIsLoading(true);
         setAction(status === 'approved' ? 'approve' : 'reject');
+        setError(null);
         try {
-            await updateDealStatus(deal._id, status);
+            const result = await updateDealStatus(deal._id, status);
+            if (!result.success) {
+                setError(result.error || 'Failed to update deal status.');
+                setAction(null);
+                return;
+            }
             setDone(true);
+            router.refresh();
         } catch (error) {
             console.error('Failed to update deal status', error);
+            setError('Failed to update deal status.');
+            setAction(null);
         } finally {
             setIsLoading(false);
         }
@@ -194,6 +206,13 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                             <p className="text-sm font-semibold">
                                 Deal has been {action === 'approve' ? 'approved' : 'rejected'} successfully.
                             </p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="flex items-center gap-3 p-4 rounded-xl border bg-red-50 border-red-200 text-red-800">
+                            <XCircle className="w-5 h-5 shrink-0" />
+                            <p className="text-sm font-semibold">{error}</p>
                         </div>
                     )}
                 </div>

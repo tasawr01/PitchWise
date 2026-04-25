@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:socket": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" server.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -28,7 +27,6 @@
     "pusher-js": "^8.5.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "socket.io": "^4.8.3",
     "tailwind-merge": "^3.4.0",
     "ts-node": "^10.9.2"
   },

@@ -151,41 +151,47 @@ import { generateDealPDFBuffer } from '@/lib/pdfGenerator';
 export async function updateDealStatus(dealId: string, status: 'approved' | 'rejected', reason?: string) {
     try {
         await dbConnect();
-        const deal = await Deal.findById(dealId)
+        const deal: any = await Deal.findById(dealId)
             .populate('pitch', 'businessName')
             .populate('entrepreneur', 'fullName')
             .populate('investor', 'fullName');
 
         if (!deal) throw new Error('Deal not found');
+        if (deal.status !== 'pending') {
+            return { success: false, error: 'This deal has already been processed.' };
+        }
 
         deal.status = status;
         if (reason) deal.rejectionReason = reason;
+        await deal.save();
 
         if (status === 'approved') {
-            // Generate PDF Buffer
-            const dealInfo = {
-                _id: deal._id.toString(),
-                startupName: deal.pitch?.businessName || 'Unknown Startup',
-                entrepreneurName: deal.entrepreneur?.fullName || 'Unknown Entrepreneur',
-                investorName: deal.investor?.fullName || 'Unknown Investor',
-                amount: deal.amount || 0,
-                equity: deal.equity || 0,
-                terms: deal.terms || 'Standard terms.',
-                date: new Date().toLocaleDateString()
-            };
+            try {
+                const dealInfo = {
+                    _id: deal._id.toString(),
+                    startupName: deal.pitch?.businessName || 'Unknown Startup',
+                    entrepreneurName: deal.entrepreneur?.fullName || 'Unknown Entrepreneur',
+                    investorName: deal.investor?.fullName || 'Unknown Investor',
+                    amount: deal.amount || 0,
+                    equity: deal.equity || 0,
+                    terms: deal.terms || 'Standard terms.',
+                    date: new Date().toLocaleDateString()
+                };
 
-            const pdfBuffer = await generateDealPDFBuffer(dealInfo);
+                const pdfBuffer = await generateDealPDFBuffer(dealInfo);
+                const uploadResult = await uploadToCloudinary(pdfBuffer, 'agreements', `deal_${deal._id}.pdf`);
 
-            // Upload PDF to Cloudinary
-            const uploadResult = await uploadToCloudinary(pdfBuffer, 'agreements', `deal_${deal._id}`);
-
-            // Save the secure url
-            deal.documentUrl = uploadResult.secure_url;
+                deal.documentUrl = uploadResult.secure_url;
+                await deal.save();
+            } catch (documentError) {
+                console.error('Deal approved, but agreement PDF generation/upload failed:', documentError);
+            }
         }
 
-        await deal.save();
         revalidatePath('/investor_dashboard/deals');
         revalidatePath('/investor_dashboard/portfolio');
+        revalidatePath('/entrepreneur_dashboard/investors');
+        revalidatePath('/admin/funding');
 
         return { success: true };
     } catch (error: any) {
