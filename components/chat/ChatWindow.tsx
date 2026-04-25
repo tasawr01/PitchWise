@@ -9,8 +9,7 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
         activeConversation,
         messages,
         setMessages,
-        socket,
-        joinConversation,
+        setConversations,
         isDealPopupOpen,
         setIsDealPopupOpen,
         pendingNavigation,
@@ -25,7 +24,6 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
 
     useEffect(() => {
         if (activeConversation) {
-            joinConversation(activeConversation._id);
             fetch(`/api/chat/messages?conversationId=${activeConversation._id}`)
                 .then(res => res.json())
                 .then(data => {
@@ -33,7 +31,7 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
                 })
                 .catch(err => console.error(err));
         }
-    }, [activeConversation, joinConversation, setMessages]);
+    }, [activeConversation, setMessages]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -61,8 +59,22 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
     // ── Send (text or file) ───────────────────────────────
     const handleSendMessage = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        if (!activeConversation || !socket) return;
+        if (!activeConversation) return;
         if (!newMessage.trim() && !filePreview) return;
+
+        const appendSentMessage = (message: any) => {
+            setMessages(prev => {
+                if (prev.some(existing => existing._id === message._id)) return prev;
+                return [...prev, message];
+            });
+
+            setConversations(prev => prev.map(c => {
+                if (c._id === message.conversation) {
+                    return { ...c, lastMessage: message, updatedAt: message.createdAt };
+                }
+                return c;
+            }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
+        };
 
         // If there's a file, upload first
         if (filePreview) {
@@ -92,20 +104,27 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
                 const isImage = filePreview.file.type.startsWith('image/');
 
                 // Always send as file or image, never as plain text
-                const messageData = {
+                const messagePayload = {
                     conversationId: activeConversation._id,
-                    sender: {
-                        user: userId,
-                        userModel: userRole === 'investor' ? 'Investor' : userRole === 'entrepreneur' ? 'Entrepreneur' : 'Admin',
-                    },
                     content: newMessage.trim() || fileName,  // fallback caption = filename
                     type: isImage ? 'image' : 'file',
                     fileUrl: url,
                     fileName: fileName,
                 };
 
-                console.log('Sending messageData:', messageData);
-                socket.emit('send_message', messageData);
+                const messageRes = await fetch('/api/chat/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(messagePayload),
+                });
+
+                const messageData = await messageRes.json();
+                if (!messageRes.ok) {
+                    alert(messageData.error || 'Failed to send message');
+                    return;
+                }
+
+                appendSentMessage(messageData.message);
                 clearFilePreview();
                 setNewMessage('');
             } catch (err) {
@@ -117,18 +136,28 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
         }
 
         // Plain text message
-        const messageData = {
-            conversationId: activeConversation._id,
-            sender: {
-                user: userId,
-                userModel: userRole === 'investor' ? 'Investor' : userRole === 'entrepreneur' ? 'Entrepreneur' : 'Admin',
-            },
-            content: newMessage,
-            type: 'text',
-        };
+        try {
+            const messageRes = await fetch('/api/chat/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversationId: activeConversation._id,
+                    content: newMessage,
+                    type: 'text',
+                }),
+            });
 
-        socket.emit('send_message', messageData);
-        setNewMessage('');
+            const messageData = await messageRes.json();
+            if (!messageRes.ok) {
+                alert(messageData.error || 'Failed to send message');
+                return;
+            }
+
+            appendSentMessage(messageData.message);
+            setNewMessage('');
+        } catch (err) {
+            alert('Failed to send message');
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {

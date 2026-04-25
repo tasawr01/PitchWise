@@ -2,6 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Create a Pusher Channels app and add these variables to `.env.local` and to the Vercel project:
+
+```bash
+PUSHER_APP_ID=
+PUSHER_SECRET=
+NEXT_PUBLIC_PUSHER_KEY=
+NEXT_PUBLIC_PUSHER_CLUSTER=
+```
+
 First, run the development server:
 
 ```bash

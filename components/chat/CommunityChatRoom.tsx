@@ -1,34 +1,38 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { getPusherClient } from '@/lib/pusher-client';
 
 export default function CommunityChatRoom({ topic, currentUser }: { topic: any, currentUser: any }) {
     const [messages, setMessages] = useState<any[]>([]);
     const [messageInput, setMessageInput] = useState('');
-    const [socket, setSocket] = useState<Socket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         // Fetch existing messages
         fetchMessages();
 
-        // Connect Socket
-        const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin);
-        setSocket(newSocket);
+        const pusher = getPusherClient();
+        if (!pusher) return;
 
-        // Emit immediately; socket.io will buffer it until connected
-        newSocket.emit("join_community_topic", topic._id);
+        const channelName = `private-community-topic-${topic._id}`;
+        const channel = pusher.subscribe(channelName);
 
-        newSocket.on("receive_community_message", (message: any) => {
+        const handleNewMessage = (message: any) => {
             const msgTopicId = message.topic?._id || message.topic;
             if (String(msgTopicId) === String(topic._id)) {
-                setMessages(prev => [...prev, message]);
+                setMessages(prev => {
+                    if (prev.some(existing => existing._id === message._id)) return prev;
+                    return [...prev, message];
+                });
             }
-        });
+        };
+
+        channel.bind('new-community-message', handleNewMessage);
 
         return () => {
-            newSocket.disconnect();
+            channel.unbind('new-community-message', handleNewMessage);
+            pusher.unsubscribe(channelName);
         };
     }, [topic._id]);
 
@@ -52,22 +56,38 @@ export default function CommunityChatRoom({ topic, currentUser }: { topic: any, 
         }
     };
 
-    const sendMessage = (e: React.FormEvent) => {
+    const sendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!messageInput.trim() || !socket) return;
+        if (!messageInput.trim()) return;
 
-        const messageData = {
-            topicId: topic._id,
-            sender: {
-                user: currentUser.id,
-                userModel: currentUser.role
-            },
-            content: messageInput,
-            type: 'text'
-        };
-
-        socket.emit("send_community_message", messageData);
+        const content = messageInput;
         setMessageInput('');
+
+        try {
+            const res = await fetch(`/api/community/topics/${topic._id}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content,
+                    type: 'text',
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                setMessageInput(content);
+                console.error(data.message || 'Failed to send community message');
+                return;
+            }
+
+            setMessages(prev => {
+                if (prev.some(existing => existing._id === data.data._id)) return prev;
+                return [...prev, data.data];
+            });
+        } catch (error) {
+            setMessageInput(content);
+            console.error('Error sending community message', error);
+        }
     };
 
     return (

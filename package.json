@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" server.ts",
+    "dev": "next dev",
     "dev:socket": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" server.ts",
     "build": "next build",
     "start": "next start",
@@ -24,10 +24,11 @@
     "nodemailer": "^7.0.12",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.2",
+    "pusher": "^5.3.3",
+    "pusher-js": "^8.5.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.4.0",
     "ts-node": "^10.9.2"
   },
