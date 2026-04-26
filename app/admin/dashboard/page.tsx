@@ -1,45 +1,83 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import dbConnect from '@/lib/db';
+import Entrepreneur from '@/models/Entrepreneur';
+import Investor from '@/models/Investor';
+import Pitch from '@/models/Pitch';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 import LineChart from '@/components/charts/LineChart';
 import BarChart from '@/components/charts/BarChart';
-import Spinner from '@/components/Spinner';
 
-export default function AdminOverview() {
-    const [stats, setStats] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+// Helper to fetch stats on server
+async function getStats() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    if (!token) return getZeroStats();
 
-    const fetchStats = async () => {
-        try {
-            const res = await fetch('/api/admin/stats');
-            if (res.ok) {
-                const data = await res.json();
-                setStats(data);
+    try {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        await jwtVerify(token, secret); // Just verify validity
+
+        await dbConnect();
+
+        // 1. User Stats
+        const totalEntrepreneurs = await Entrepreneur.countDocuments();
+        const totalInvestors = await Investor.countDocuments();
+
+        // 2. Pitch Stats
+        const totalPitches = await Pitch.countDocuments();
+        const pendingPitches = await Pitch.countDocuments({ status: 'pending' });
+        const approvedPitches = await Pitch.countDocuments({ status: 'approved' });
+        const rejectedPitches = await Pitch.countDocuments({ status: 'rejected' });
+
+        return {
+            users: {
+                total: totalEntrepreneurs + totalInvestors,
+                entrepreneurs: totalEntrepreneurs,
+                investors: totalInvestors
+            },
+            pitches: {
+                total: totalPitches,
+                pending: pendingPitches,
+                approved: approvedPitches,
+                rejected: rejectedPitches
+            },
+            deals: {
+                completed: 12, // Placeholder
+                discarded: 5   // Placeholder
             }
-        } catch (error) {
-            console.error('Failed to fetch stats:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchStats();
-
-        // Polling for real-time updates every 30 seconds
-        const interval = setInterval(fetchStats, 30000);
-        return () => clearInterval(interval);
-    }, []);
-
-    if (loading && !stats) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <Spinner className="w-10 h-10 text-[#0B2C4A]" />
-            </div>
-        );
+        };
+    } catch {
+        return getZeroStats();
     }
+}
 
-    if (!stats) return null;
+function getZeroStats() {
+    return {
+        users: { total: 0, entrepreneurs: 0, investors: 0 },
+        pitches: { total: 0, pending: 0, approved: 0, rejected: 0 },
+        deals: { completed: 0, discarded: 0 }
+    };
+}
+
+export default async function AdminOverview() {
+    const stats = await getStats();
+
+    // DUMMY CHART DATA (Visual Only)
+    const userGrowthData = [
+        { label: 'Jan', value: 120 },
+        { label: 'Feb', value: 150 },
+        { label: 'Mar', value: 240 },
+        { label: 'Apr', value: 200 },
+        { label: 'May', value: 280 },
+        { label: 'Jun', value: 350 },
+    ];
+
+    const dealTrendsData = [
+        { label: 'Q1', value: 12, color: '#10b981' }, // Green
+        { label: 'Q2', value: 19, color: '#10b981' },
+        { label: 'Q3', value: 15, color: '#f59e0b' }, // Orange (Pending)
+        { label: 'Q4', value: 8, color: '#ef4444' },  // Red (Dropped)
+    ];
 
     return (
         <div className="space-y-8">
@@ -74,7 +112,7 @@ export default function AdminOverview() {
                 <StatCard
                     title="Completed Deals"
                     value={stats.deals.completed}
-                    sub={`${stats.deals.pending} Pending Deals`}
+                    sub="Active Deals"
                     color="purple"
                     icon={<svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 />
@@ -88,22 +126,22 @@ export default function AdminOverview() {
                             <h3 className="text-xl font-bold text-[#0B2C4A]">User Growth</h3>
                             <p className="text-sm text-gray-500">New registrations over time</p>
                         </div>
-                        <span className="bg-[#0B2C4A] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Last 6 Months</span>
+                        <span className="bg-[#0B2C4A] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Monthly</span>
                     </div>
                     <div className="h-full pb-10">
-                        <LineChart data={stats.charts.userGrowth} color="#0B2C4A" height={280} />
+                        <LineChart data={userGrowthData} color="#0B2C4A" height={280} />
                     </div>
                 </div>
                 <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 h-[420px] transition-shadow hover:shadow-xl">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-xl font-bold text-[#0B2C4A]">Deal Trends</h3>
-                            <p className="text-sm text-gray-500">Distribution of deal statuses</p>
+                            <p className="text-sm text-gray-500">Quarterly deal performance</p>
                         </div>
-                        <span className="bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">{new Date().getFullYear()}</span>
+                        <span className="bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">2026</span>
                     </div>
                     <div className="h-full pb-10">
-                        <BarChart data={stats.charts.dealTrends} color="#0B2C4A" height={280} />
+                        <BarChart data={dealTrendsData} color="#0B2C4A" height={280} />
                     </div>
                 </div>
             </div>
