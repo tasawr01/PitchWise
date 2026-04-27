@@ -109,7 +109,7 @@ export default async function MyInvestors() {
                             {/* Actions */}
                             <div className="w-full mt-auto pt-4 border-t border-gray-100">
                                 <Link
-                                    href={`/messages?userId=${investor.investorId}`}
+                                    href={`/chat?userId=${investor.investorId}`}
                                     className="w-full py-3 bg-[#0B2C4A] text-white font-semibold rounded-xl hover:bg-[#09223a] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5"
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
