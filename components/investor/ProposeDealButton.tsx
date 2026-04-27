@@ -34,7 +34,7 @@ export default function ProposeDealButton({ pitchId, investorId, entrepreneurId,
             });
 
             if (result.success) {
-                alert('Deal proposal sent successfully!');
+                alert('Deal created successfully. The investor can now complete the dummy payment flow.');
                 setIsOpen(false);
                 router.push('/investor_dashboard/deals');
             } else {

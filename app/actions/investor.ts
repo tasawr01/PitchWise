@@ -3,8 +3,8 @@
 import dbConnect from '@/lib/db';
 import Pitch from '@/models/Pitch';
 import Investor from '@/models/Investor';
-import Entrepreneur from '@/models/Entrepreneur';
 import { revalidatePath } from 'next/cache';
+import { isDealPaid } from '@/lib/deal-status';
 
 export async function getPitches(filters: any = {}, page = 1, limit = 9) {
     try {
@@ -135,6 +135,7 @@ export async function getInvestorDeals(investorId: string) {
         const deals = await Deal.find({ investor: investorId })
             .populate('pitch', 'businessName logoUrl')
             .populate('entrepreneur', 'fullName email')
+            .populate('paymentRecord', 'receiptNumber cardLast4 processedAt status')
             .sort({ createdAt: -1 })
             .lean();
 
@@ -145,10 +146,7 @@ export async function getInvestorDeals(investorId: string) {
     }
 }
 
-import { uploadToCloudinary } from '@/lib/cloudinary';
-import { generateDealPDFBuffer } from '@/lib/pdfGenerator';
-
-export async function updateDealStatus(dealId: string, status: 'approved' | 'rejected', reason?: string) {
+export async function updateDealStatus(dealId: string, status: 'approved' | 'accepted' | 'rejected', reason?: string) {
     try {
         await dbConnect();
         const deal: any = await Deal.findById(dealId)
@@ -157,36 +155,22 @@ export async function updateDealStatus(dealId: string, status: 'approved' | 'rej
             .populate('investor', 'fullName');
 
         if (!deal) throw new Error('Deal not found');
-        if (deal.status !== 'pending') {
-            return { success: false, error: 'This deal has already been processed.' };
+        if (status === 'rejected' && isDealPaid(deal)) {
+            return { success: false, error: 'Paid deals cannot be rejected.' };
         }
 
-        deal.status = status;
-        if (reason) deal.rejectionReason = reason;
-        await deal.save();
-
-        if (status === 'approved') {
-            try {
-                const dealInfo = {
-                    _id: deal._id.toString(),
-                    startupName: deal.pitch?.businessName || 'Unknown Startup',
-                    entrepreneurName: deal.entrepreneur?.fullName || 'Unknown Entrepreneur',
-                    investorName: deal.investor?.fullName || 'Unknown Investor',
-                    amount: deal.amount || 0,
-                    equity: deal.equity || 0,
-                    terms: deal.terms || 'Standard terms.',
-                    date: new Date().toLocaleDateString()
-                };
-
-                const pdfBuffer = await generateDealPDFBuffer(dealInfo);
-                const uploadResult = await uploadToCloudinary(pdfBuffer, 'agreements', `deal_${deal._id}.pdf`);
-
-                deal.documentUrl = uploadResult.secure_url;
-                await deal.save();
-            } catch (documentError) {
-                console.error('Deal approved, but agreement PDF generation/upload failed:', documentError);
+        if (status === 'rejected') {
+            deal.status = 'rejected';
+            deal.rejectionReason = reason || 'Declined by investor.';
+        } else {
+            deal.status = 'accepted';
+            if (!deal.paymentStatus || deal.paymentStatus === 'failed') {
+                deal.paymentStatus = 'unpaid';
             }
+            deal.rejectionReason = undefined;
         }
+
+        await deal.save();
 
         revalidatePath('/investor_dashboard/deals');
         revalidatePath('/investor_dashboard/portfolio');
@@ -221,7 +205,8 @@ export async function createDealProposal(data: { pitchId: string, investorId: st
             amount: data.amount,
             equity: data.equity,
             terms: data.terms,
-            status: 'pending'
+            status: 'accepted',
+            paymentStatus: 'unpaid'
         });
 
         revalidatePath('/investor_dashboard/deals');

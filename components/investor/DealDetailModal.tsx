@@ -18,8 +18,10 @@ import {
     Calendar,
     Hash,
     Shield,
+    CreditCard,
 } from 'lucide-react';
 import Image from 'next/image';
+import { getDealStage } from '@/lib/deal-status';
 
 interface DealDetailModalProps {
     deal: any;
@@ -27,60 +29,63 @@ interface DealDetailModalProps {
     onClose: () => void;
 }
 
+const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    awaiting_payment: { label: 'Awaiting Payment', color: 'text-yellow-700', bg: 'bg-yellow-100 border-yellow-200' },
+    processing_payment: { label: 'Processing', color: 'text-blue-700', bg: 'bg-blue-100 border-blue-200' },
+    payment_failed: { label: 'Payment Failed', color: 'text-amber-700', bg: 'bg-amber-100 border-amber-200' },
+    paid: { label: 'Paid', color: 'text-green-700', bg: 'bg-green-100 border-green-200' },
+    rejected: { label: 'Rejected', color: 'text-red-700', bg: 'bg-red-100 border-red-200' },
+};
+
 export default function DealDetailModal({ deal, isReadOnly = false, onClose }: DealDetailModalProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const [action, setAction] = useState<'approve' | 'reject' | null>(null);
     const [done, setDone] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleAction = async (status: 'approved' | 'rejected') => {
+    const stage = done ? 'rejected' : getDealStage(deal);
+    const { label, color, bg } = statusConfig[stage] ?? statusConfig.awaiting_payment;
+    const canReject = !done && (stage === 'awaiting_payment' || stage === 'payment_failed');
+    const paymentRecordId = typeof deal.paymentRecord === 'object' ? deal.paymentRecord?._id : deal.paymentRecord;
+
+    const handleReject = async () => {
         setIsLoading(true);
-        setAction(status === 'approved' ? 'approve' : 'reject');
         setError(null);
+
         try {
-            const result = await updateDealStatus(deal._id, status);
+            const result = await updateDealStatus(deal._id, 'rejected');
             if (!result.success) {
                 setError(result.error || 'Failed to update deal status.');
-                setAction(null);
                 return;
             }
+
             setDone(true);
             router.refresh();
-        } catch (error) {
-            console.error('Failed to update deal status', error);
+        } catch (submitError) {
+            console.error('Failed to reject deal', submitError);
             setError('Failed to update deal status.');
-            setAction(null);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-        pending:  { label: 'Pending Review',  color: 'text-yellow-700', bg: 'bg-yellow-100 border-yellow-200' },
-        approved: { label: 'Approved',        color: 'text-green-700',  bg: 'bg-green-100 border-green-200'  },
-        rejected: { label: 'Rejected',        color: 'text-red-700',    bg: 'bg-red-100 border-red-200'      },
+    const goToPayment = () => {
+        router.push(`/investor_dashboard/deals/${deal._id}/pay`);
+        onClose();
     };
 
-    const currentStatus = done
-        ? (action === 'approve' ? 'approved' : 'rejected')
-        : deal.status;
-
-    const { label, color, bg } = statusConfig[currentStatus] ?? statusConfig['pending'];
+    const isPaymentReady = stage === 'awaiting_payment' || stage === 'payment_failed' || stage === 'processing_payment';
 
     return (
-        /* Backdrop */
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
             onClick={onClose}
         >
-            {/* Modal Panel */}
             <div
                 className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-                onClick={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
             >
-                {/* ── Header ─────────────────────────────── */}
                 <div className="sticky top-0 z-10 bg-white rounded-t-3xl px-8 pt-8 pb-5 border-b border-gray-100 flex items-start justify-between">
                     <div className="flex items-center gap-4">
                         <div className="relative w-14 h-14 bg-gray-100 rounded-xl overflow-hidden shrink-0">
@@ -95,8 +100,9 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                         <div>
                             <h2 className="text-2xl font-extrabold text-[#0B2C4A]">{deal.pitch?.businessName}</h2>
                             <span className={`inline-flex items-center gap-1.5 mt-1 px-3 py-0.5 rounded-full text-xs font-bold border ${bg} ${color}`}>
-                                {currentStatus === 'approved' && <CheckCircle className="w-3 h-3" />}
-                                {currentStatus === 'rejected' && <XCircle className="w-3 h-3" />}
+                                {stage === 'paid' && <CheckCircle className="w-3 h-3" />}
+                                {stage === 'rejected' && <XCircle className="w-3 h-3" />}
+                                {stage !== 'paid' && stage !== 'rejected' && <CreditCard className="w-3 h-3" />}
                                 {label}
                             </span>
                         </div>
@@ -109,10 +115,7 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                     </button>
                 </div>
 
-                {/* ── Body ───────────────────────────────── */}
                 <div className="px-8 py-6 space-y-6">
-
-                    {/* Ref / Date */}
                     <div className="flex items-center gap-6 text-sm text-gray-500">
                         <span className="flex items-center gap-1.5">
                             <Hash className="w-4 h-4" />
@@ -124,7 +127,6 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                         </span>
                     </div>
 
-                    {/* Parties */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100">
                             <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -146,7 +148,6 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                         </div>
                     </div>
 
-                    {/* Key Figures */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-[#0B2C4A] rounded-2xl p-5 text-white">
                             <p className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
@@ -162,7 +163,6 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                         </div>
                     </div>
 
-                    {/* Terms & Conditions */}
                     <div>
                         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <Shield className="w-4 h-4 text-[#0B2C4A]" /> Terms &amp; Conditions
@@ -174,7 +174,36 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                         </div>
                     </div>
 
-                    {/* Document link */}
+                    {isPaymentReady && (
+                        <div className="flex items-start gap-3 p-4 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200">
+                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                            <p className="text-sm">
+                                This deal has already been accepted and is waiting for a dummy card payment. Use the demo card on the payment page to complete the flow.
+                            </p>
+                        </div>
+                    )}
+
+                    {stage === 'paid' && paymentRecordId && (
+                        <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-green-700">Payment Receipt</p>
+                                    <p className="text-sm text-green-900 mt-1">
+                                        Receipt {deal.paymentRecord?.receiptNumber || 'available'} for dummy payment ending in {deal.paymentRecord?.cardLast4 || '4242'}.
+                                    </p>
+                                </div>
+                                <a
+                                    href={`/api/payments/${paymentRecordId}/receipt`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0B2C4A] shadow-sm border border-green-200 hover:bg-green-100 transition-colors"
+                                >
+                                    <FileText className="w-4 h-4" /> Open Receipt
+                                </a>
+                            </div>
+                        </div>
+                    )}
+
                     {deal.documentUrl && (
                         <a
                             href={deal.documentUrl}
@@ -186,26 +215,10 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                         </a>
                     )}
 
-                    {/* Disclaimer */}
-                    {!isReadOnly && !done && currentStatus === 'pending' && (
-                        <div className="flex items-start gap-3 p-4 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200">
-                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                            <p className="text-sm">
-                                By approving this deal, you confirm that all details above are accurate and agreed upon.
-                                This action will be recorded in admin records.
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Done Banner */}
                     {done && (
-                        <div className={`flex items-center gap-3 p-4 rounded-xl border ${action === 'approve' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-                            {action === 'approve'
-                                ? <CheckCircle className="w-5 h-5 shrink-0" />
-                                : <XCircle className="w-5 h-5 shrink-0" />}
-                            <p className="text-sm font-semibold">
-                                Deal has been {action === 'approve' ? 'approved' : 'rejected'} successfully.
-                            </p>
+                        <div className="flex items-center gap-3 p-4 rounded-xl border bg-red-50 border-red-200 text-red-800">
+                            <XCircle className="w-5 h-5 shrink-0" />
+                            <p className="text-sm font-semibold">Deal rejected successfully.</p>
                         </div>
                     )}
 
@@ -217,33 +230,38 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                     )}
                 </div>
 
-                {/* ── Footer Actions ──────────────────────── */}
-                {!isReadOnly && !done && currentStatus === 'pending' && (
+                {!isReadOnly && !done && (
                     <div className="sticky bottom-0 bg-white border-t border-gray-100 px-8 py-5 flex gap-3 rounded-b-3xl">
-                        <button
-                            onClick={() => handleAction('rejected')}
-                            disabled={isLoading}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-bold text-sm disabled:opacity-50 transition-colors"
-                        >
-                            {isLoading && action === 'reject'
-                                ? <Loader2 className="w-4 h-4 animate-spin" />
-                                : <XCircle className="w-4 h-4" />}
-                            Reject Deal
-                        </button>
-                        <button
-                            onClick={() => handleAction('approved')}
-                            disabled={isLoading}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#0B2C4A] text-white rounded-xl hover:bg-[#09223a] font-bold text-sm disabled:opacity-50 transition-all shadow-lg hover:shadow-xl"
-                        >
-                            {isLoading && action === 'approve'
-                                ? <Loader2 className="w-4 h-4 animate-spin" />
-                                : <CheckCircle className="w-4 h-4" />}
-                            Approve &amp; Sign Deal
-                        </button>
+                        {canReject && (
+                            <button
+                                onClick={handleReject}
+                                disabled={isLoading}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-bold text-sm disabled:opacity-50 transition-colors"
+                            >
+                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                                Decline Deal
+                            </button>
+                        )}
+                        {isPaymentReady && (
+                            <button
+                                onClick={goToPayment}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#0B2C4A] text-white rounded-xl hover:bg-[#09223a] font-bold text-sm transition-all shadow-lg hover:shadow-xl"
+                            >
+                                <CreditCard className="w-4 h-4" />
+                                {stage === 'payment_failed' ? 'Retry Payment' : 'Continue to Payment'}
+                            </button>
+                        )}
+                        {(stage === 'paid' || stage === 'rejected') && (
+                            <button
+                                onClick={onClose}
+                                className="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors"
+                            >
+                                Close
+                            </button>
+                        )}
                     </div>
                 )}
 
-                {/* Read-only close footer */}
                 {(isReadOnly || done) && (
                     <div className="sticky bottom-0 bg-white border-t border-gray-100 px-8 py-5 rounded-b-3xl">
                         <button

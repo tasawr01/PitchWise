@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { redirect } from 'next/navigation';
 import DealsTabView from '@/components/investor/DealsTabView';
+import { isDealAwaitingPayment } from '@/lib/deal-status';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,14 +26,14 @@ export default async function DealsPage() {
     if (!user) redirect('/login');
 
     const deals = await getInvestorDeals(user.id as string);
-    const pendingDeals = deals.filter((d: any) => d.status === 'pending');
-    const pastDeals = deals.filter((d: any) => d.status !== 'pending');
+    const pendingDeals = deals.filter((d: any) => isDealAwaitingPayment(d));
+    const pastDeals = deals.filter((d: any) => !isDealAwaitingPayment(d));
 
     return (
         <div className="max-w-7xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">My Deals</h1>
-                <p className="text-gray-500 mt-2 text-lg">Manage your investment contracts and agreements.</p>
+                <p className="text-gray-500 mt-2 text-lg">Manage accepted deals, complete dummy payments, and review completed transactions.</p>
             </div>
 
             <DealsTabView pendingDeals={pendingDeals} pastDeals={pastDeals} />

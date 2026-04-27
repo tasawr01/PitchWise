@@ -15,14 +15,14 @@ export default function DealsTabView({ pendingDeals, pastDeals }: DealsTabViewPr
     const tabs = [
         {
             key: 'pending' as const,
-            label: 'Pending Review',
+            label: 'Awaiting Payment',
             icon: <Clock className="w-4 h-4" />,
             count: pendingDeals.length,
             countColor: 'bg-yellow-100 text-yellow-700',
         },
         {
             key: 'past' as const,
-            label: 'Past Deals',
+            label: 'Closed Deals',
             icon: <CheckCircle className="w-4 h-4" />,
             count: pastDeals.length,
             countColor: 'bg-gray-100 text-gray-600',
@@ -72,8 +72,8 @@ export default function DealsTabView({ pendingDeals, pastDeals }: DealsTabViewPr
                     </div>
                     <p className="text-gray-500 font-medium">
                         {activeTab === 'pending'
-                            ? 'No pending deals to review.'
-                            : 'No past deal history yet.'
+                            ? 'No deals are waiting for payment right now.'
+                            : 'No completed or declined deals yet.'
                         }
                     </p>
                 </div>

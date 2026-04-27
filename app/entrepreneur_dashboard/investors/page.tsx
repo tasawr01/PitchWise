@@ -67,7 +67,7 @@ export default async function MyInvestors() {
                         </svg>
                     </div>
                     <h3 className="mt-2 text-xl font-bold text-[#0B2C4A]">No Investors Found</h3>
-                    <p className="mt-2 text-gray-500 max-w-sm mx-auto">Currently, there are no approved investment deals backing any of your active pitches.</p>
+                    <p className="mt-2 text-gray-500 max-w-sm mx-auto">Currently, there are no paid investment deals backing any of your active pitches.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
