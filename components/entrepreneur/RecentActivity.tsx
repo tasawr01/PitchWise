@@ -2,56 +2,76 @@
 
 import React, { useState } from 'react';
 
-// Shared Dummy Data
-const initialActivities = [
-    { id: 1, text: "Investor Alex viewed your 'AI Health' pitch", time: "2h ago", type: "view" },
-    { id: 2, text: "New message from Sarah regarding 'GreenEnergy'", time: "5h ago", type: "message" },
-    { id: 3, text: "Pitch 'TechEdu' was approved by Admin", time: "1d ago", type: "success" },
-    { id: 4, text: "Profile updated successfully", time: "2d ago", type: "info" },
-];
+interface ActivityItem {
+    type: string;
+    message: string;
+    date: string | Date;
+    isRead: boolean;
+}
 
-const allActivities = [
-    ...initialActivities,
-    { id: 5, text: "Investor John viewed your 'TechEdu' pitch", time: "3d ago", type: "view" },
-    { id: 6, text: "System maintenance scheduled for weekend", time: "4d ago", type: "info" },
-    { id: 7, text: "Pitch 'GreenEnergy' submitted for review", time: "5d ago", type: "info" },
-    { id: 8, text: "Welcome to PitchWise!", time: "1w ago", type: "success" },
-];
+interface Props {
+    activities: ActivityItem[];
+}
 
-export default function RecentActivity() {
+function timeAgo(date: string | Date) {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const diff = Date.now() - d.getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return 'just now';
+    if (min < 60) return `${min}m ago`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}h ago`;
+    const days = Math.floor(hr / 24);
+    if (days < 7) return `${days}d ago`;
+    const wks = Math.floor(days / 7);
+    if (wks < 4) return `${wks}w ago`;
+    return d.toLocaleDateString();
+}
+
+export default function RecentActivity({ activities }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const visible = activities.slice(0, 4);
 
     return (
         <>
             <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 h-full">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-800">Recent Activity</h3>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                    >
-                        View All
-                    </button>
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-800">Recent Activity</h3>
+                        <p className="text-xs text-gray-500 mt-1">{activities.length === 0 ? 'No notifications yet' : `${activities.filter(a => !a.isRead).length} unread`}</p>
+                    </div>
+                    {activities.length > 4 && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                        >
+                            View All
+                        </button>
+                    )}
                 </div>
-                <ul className="divide-y divide-gray-50">
-                    {initialActivities.map(activity => (
-                        <ActivityItem key={activity.id} {...activity} />
-                    ))}
-                </ul>
+                {visible.length === 0 ? (
+                    <div className="py-10 text-center text-gray-400">
+                        <svg className="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <p className="text-sm">When new things happen, they'll appear here.</p>
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-gray-50">
+                        {visible.map((activity, i) => (
+                            <ActivityRow key={i} {...activity} />
+                        ))}
+                    </ul>
+                )}
             </div>
 
-            {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all" onClick={() => setIsModalOpen(false)}>
-                    <div
-                        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all scale-100"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {/* Header */}
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
                         <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                             <div>
                                 <h3 className="text-2xl font-bold text-gray-900">All Activity</h3>
-                                <p className="text-sm text-gray-500 mt-1">History of interactions and updates.</p>
+                                <p className="text-sm text-gray-500 mt-1">Recent notifications and platform events.</p>
                             </div>
                             <button
                                 onClick={() => setIsModalOpen(false)}
@@ -62,19 +82,15 @@ export default function RecentActivity() {
                                 </svg>
                             </button>
                         </div>
-
-                        {/* Body */}
                         <div className="p-0 max-h-[60vh] overflow-y-auto">
                             <ul className="divide-y divide-gray-50">
-                                {allActivities.map(activity => (
-                                    <div key={activity.id} className="px-8 hover:bg-gray-50/50 transition-colors">
-                                        <ActivityItem {...activity} />
+                                {activities.map((activity, i) => (
+                                    <div key={i} className="px-8 hover:bg-gray-50/50 transition-colors">
+                                        <ActivityRow {...activity} />
                                     </div>
                                 ))}
                             </ul>
                         </div>
-
-                        {/* Footer */}
                         <div className="px-8 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
                             <button
                                 onClick={() => setIsModalOpen(false)}
@@ -90,47 +106,23 @@ export default function RecentActivity() {
     );
 }
 
-function ActivityItem({ text, time, type }: any) {
-    let icon;
-    let iconBg;
-    let iconColor;
-
-    switch (type) {
-        case 'view':
-            iconBg = 'bg-blue-50';
-            iconColor = 'text-blue-600';
-            icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
-            break;
-        case 'message':
-            iconBg = 'bg-purple-50';
-            iconColor = 'text-purple-600';
-            icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>;
-            break;
-        case 'success':
-            iconBg = 'bg-green-50';
-            iconColor = 'text-green-600';
-            icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>;
-            break;
-        default: // info
-            iconBg = 'bg-gray-50';
-            iconColor = 'text-gray-600';
-            icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-    }
+function ActivityRow({ message, date, type, isRead }: ActivityItem) {
+    const tones: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+        success: { bg: 'bg-green-50', text: 'text-green-600', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> },
+        warning: { bg: 'bg-amber-50', text: 'text-amber-600', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> },
+        error: { bg: 'bg-red-50', text: 'text-red-600', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> },
+        info: { bg: 'bg-blue-50', text: 'text-blue-600', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    };
+    const tone = tones[type] || tones.info;
 
     return (
         <li className="flex items-center gap-4 py-4">
-            <div className={`p-2.5 rounded-full ${iconBg} ${iconColor} flex-shrink-0`}>
-                {icon}
-            </div>
+            <div className={`p-2.5 rounded-full ${tone.bg} ${tone.text} shrink-0`}>{tone.icon}</div>
             <div className="flex-1 min-w-0">
-                <p className="text-gray-800 text-sm font-medium truncate">{text}</p>
-                <div className="flex items-center mt-0.5">
-                    <span className="text-xs text-gray-400">{time}</span>
-                </div>
+                <p className={`text-sm ${isRead ? 'text-gray-600 font-medium' : 'text-gray-900 font-semibold'}`}>{message}</p>
+                <span className="text-xs text-gray-400">{timeAgo(date)}</span>
             </div>
-            <div className="text-gray-300">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </div>
+            {!isRead && <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />}
         </li>
     );
 }
