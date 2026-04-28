@@ -5,6 +5,7 @@ import Conversation from '@/models/Conversation';
 import Investor from '@/models/Investor';
 import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
+import { getPaidDealQuery, isDealPaid, isDealAwaitingPayment } from '@/lib/deal-status';
 
 export interface ChartPoint { label: string; value: number; color: string }
 export interface TrendPoint { label: string; value: number }
@@ -51,9 +52,9 @@ export interface InvestorStats {
     activity: { type: string; message: string; date: Date; isRead: boolean }[];
 }
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS = {
     pending: '#f59e0b',
-    approved: '#10b981',
+    paid: '#10b981',
     rejected: '#ef4444',
 };
 
@@ -74,8 +75,7 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
         investor,
         deals,
         totalDealsCount,
-        pendingDealsCount,
-        approvedDealsCount,
+        paidDealsCount,
         rejectedDealsCount,
         availablePitches,
         marketAvgAgg,
@@ -88,8 +88,7 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
         Investor.findById(iId).populate({ path: 'watchlist', select: 'industry stage businessName amountRequired' }).lean() as any,
         Deal.find({ investor: iId }).populate('pitch', 'industry stage businessName').lean() as any,
         Deal.countDocuments({ investor: iId }),
-        Deal.countDocuments({ investor: iId, status: 'pending' }),
-        Deal.countDocuments({ investor: iId, status: 'approved' }),
+        Deal.countDocuments(getPaidDealQuery({ investor: iId })),
         Deal.countDocuments({ investor: iId, status: 'rejected' }),
         Pitch.countDocuments({ status: 'approved' }),
         Pitch.aggregate([
@@ -117,21 +116,21 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
             .lean(),
     ]);
 
-    const approvedDeals = (deals as any[]).filter(d => d.status === 'approved');
+    const paidDeals = (deals as any[]).filter(d => isDealPaid(d));
+    const awaitingPaymentCount = (deals as any[]).filter(d => isDealAwaitingPayment(d)).length;
 
-    const totalInvested = approvedDeals.reduce((acc: number, d: any) => acc + (d.amount || 0), 0);
-    const avgCheckSize = approvedDeals.length > 0 ? Math.round(totalInvested / approvedDeals.length) : 0;
-    const equitySum = approvedDeals.reduce((acc: number, d: any) => acc + (d.equity || 0), 0);
-    const avgEquity = approvedDeals.length > 0 ? Math.round((equitySum / approvedDeals.length) * 10) / 10 : 0;
+    const totalInvested = paidDeals.reduce((acc: number, d: any) => acc + (d.amount || 0), 0);
+    const avgCheckSize = paidDeals.length > 0 ? Math.round(totalInvested / paidDeals.length) : 0;
+    const equitySum = paidDeals.reduce((acc: number, d: any) => acc + (d.equity || 0), 0);
+    const avgEquity = paidDeals.length > 0 ? Math.round((equitySum / paidDeals.length) * 10) / 10 : 0;
 
     const totalDeals = totalDealsCount;
-    const closedCount = approvedDealsCount + rejectedDealsCount;
-    const winRate = closedCount > 0 ? Math.round((approvedDealsCount / closedCount) * 100) : 0;
+    const closedCount = paidDealsCount + rejectedDealsCount;
+    const winRate = closedCount > 0 ? Math.round((paidDealsCount / closedCount) * 100) : 0;
 
     const watchlist = (investor?.watchlist || []) as any[];
     const watchlistCount = watchlist.length;
 
-    // Industry preference matching
     const prefs: string[] = investor?.industryPreferences || [];
     let matchingPitches = 0;
     if (prefs.length > 0) {
@@ -141,7 +140,6 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
     const avgPitchAsk = Math.round(marketAvgAgg[0]?.avg || 0);
     const totalCapitalSeeking = marketTotalAgg[0]?.total || 0;
 
-    // Trends - last 6 months
     const now = new Date();
     const months: { start: Date; end: Date; label: string }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -152,10 +150,25 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
 
     const investmentTrend: TrendPoint[] = await Promise.all(months.map(async m => {
         const agg = await Deal.aggregate([
-            { $match: { investor: iId, status: 'approved', createdAt: { $gte: m.start, $lt: m.end } } },
+            { $match: getPaidDealQuery({ investor: iId, paidAt: { $gte: m.start, $lt: m.end } }) },
             { $group: { _id: null, total: { $sum: '$amount' } } },
         ]);
-        return { label: m.label, value: agg[0]?.total || 0 };
+        // Fallback for legacy deals with no paidAt — use createdAt
+        if (!agg[0]?.total) {
+            const fallback = await Deal.aggregate([
+                {
+                    $match: {
+                        investor: iId,
+                        status: 'approved',
+                        paidAt: { $exists: false },
+                        createdAt: { $gte: m.start, $lt: m.end },
+                    },
+                },
+                { $group: { _id: null, total: { $sum: '$amount' } } },
+            ]);
+            return { label: m.label, value: fallback[0]?.total || 0 };
+        }
+        return { label: m.label, value: agg[0].total };
     }));
 
     const dealsTrend: TrendPoint[] = await Promise.all(months.map(async m => {
@@ -168,10 +181,9 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
         return { label: m.label, value: c };
     }));
 
-    // Portfolio industry breakdown
     const portfolioByIndustryMap = new Map<string, number>();
     const portfolioByStageMap = new Map<string, number>();
-    for (const d of approvedDeals) {
+    for (const d of paidDeals) {
         const industry = (d.pitch as any)?.industry || 'Other';
         const stage = (d.pitch as any)?.stage || 'Unknown';
         portfolioByIndustryMap.set(industry, (portfolioByIndustryMap.get(industry) || 0) + (d.amount || 0));
@@ -185,7 +197,6 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
         .sort((a, b) => b[1] - a[1])
         .map(([label, value], i) => ({ label, value, color: PALETTE[i % PALETTE.length] }));
 
-    // Watchlist industry distribution
     const watchlistByIndustryMap = new Map<string, number>();
     for (const w of watchlist) {
         const industry = w.industry || 'Other';
@@ -196,20 +207,24 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
         .map(([label, value], i) => ({ label, value, color: PALETTE[i % PALETTE.length] }));
 
     const dealStatus: ChartPoint[] = [
-        { label: 'Pending', value: pendingDealsCount, color: STATUS_COLORS.pending },
-        { label: 'Approved', value: approvedDealsCount, color: STATUS_COLORS.approved },
+        { label: 'Awaiting Payment', value: awaitingPaymentCount, color: STATUS_COLORS.pending },
+        { label: 'Paid', value: paidDealsCount, color: STATUS_COLORS.paid },
         { label: 'Rejected', value: rejectedDealsCount, color: STATUS_COLORS.rejected },
     ].filter(p => p.value > 0);
 
-    const portfolioList = approvedDeals
-        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    const portfolioList = paidDeals
+        .sort((a: any, b: any) => {
+            const aDate = a.paidAt ? new Date(a.paidAt).getTime() : new Date(a.createdAt).getTime();
+            const bDate = b.paidAt ? new Date(b.paidAt).getTime() : new Date(b.createdAt).getTime();
+            return bDate - aDate;
+        })
         .slice(0, 5)
         .map((d: any) => ({
             businessName: d.pitch?.businessName || 'Unknown',
             industry: d.pitch?.industry || '—',
             amount: d.amount || 0,
             equity: d.equity || 0,
-            date: d.createdAt,
+            date: d.paidAt || d.createdAt,
         }));
 
     const activity = (notifications as any[]).map(n => ({
@@ -229,15 +244,15 @@ export async function getInvestorStats(investorId: string): Promise<InvestorStat
     return {
         portfolio: {
             totalInvested,
-            activeInvestments: approvedDeals.length,
+            activeInvestments: paidDeals.length,
             avgCheckSize,
             avgEquity,
             totalEquityHeld: Math.round(equitySum * 10) / 10,
         },
         deals: {
             total: totalDeals,
-            pending: pendingDealsCount,
-            approved: approvedDealsCount,
+            pending: awaitingPaymentCount,
+            approved: paidDealsCount,
             rejected: rejectedDealsCount,
             winRate,
         },

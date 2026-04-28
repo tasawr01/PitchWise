@@ -5,6 +5,7 @@ import Conversation from '@/models/Conversation';
 import Investor from '@/models/Investor';
 import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
+import { getPaidDealQuery, isDealPaid, isDealAwaitingPayment } from '@/lib/deal-status';
 
 export interface ChartPoint { label: string; value: number; color: string }
 export interface TrendPoint { label: string; value: number }
@@ -83,10 +84,8 @@ export async function getEntrepreneurStats(entrepreneurId: string): Promise<Entr
         viewsAgg,
         topPitchRaw,
         totalDeals,
-        pendingDeals,
-        approvedDeals,
         rejectedDeals,
-        approvedDealsList,
+        allDealsForEntrepreneur,
         equityAvgAgg,
         valuationAgg,
         activeChats,
@@ -104,12 +103,10 @@ export async function getEntrepreneurStats(entrepreneurId: string): Promise<Entr
         ]),
         Pitch.findOne({ entrepreneur: eId }).sort({ views: -1 }).select('businessName views industry').lean(),
         Deal.countDocuments({ entrepreneur: eId }),
-        Deal.countDocuments({ entrepreneur: eId, status: 'pending' }),
-        Deal.countDocuments({ entrepreneur: eId, status: 'approved' }),
         Deal.countDocuments({ entrepreneur: eId, status: 'rejected' }),
-        Deal.find({ entrepreneur: eId, status: 'approved' }).select('amount equity createdAt investor').lean(),
+        Deal.find({ entrepreneur: eId }).select('amount equity status paymentStatus paidAt createdAt investor').lean(),
         Deal.aggregate([
-            { $match: { entrepreneur: eId, status: 'approved' } },
+            { $match: getPaidDealQuery({ entrepreneur: eId }), },
             { $group: { _id: null, avg: { $avg: '$equity' } } },
         ]),
         Pitch.aggregate([
@@ -131,7 +128,7 @@ export async function getEntrepreneurStats(entrepreneurId: string): Promise<Entr
             dealStatus: 'discarded',
             'participants.user': eId,
         }),
-        Deal.distinct('investor', { entrepreneur: eId }),
+        Deal.distinct('investor', getPaidDealQuery({ entrepreneur: eId })),
         Pitch.find({ entrepreneur: eId }).select('_id').lean().then(async ps => {
             const ids = ps.map(p => p._id);
             return Investor.countDocuments({ watchlist: { $in: ids } });
@@ -154,8 +151,12 @@ export async function getEntrepreneurStats(entrepreneurId: string): Promise<Entr
         ? { businessName: (topPitchRaw as any).businessName || 'Untitled', views: (topPitchRaw as any).views || 0, industry: (topPitchRaw as any).industry || '—' }
         : null;
 
-    const totalRaised = approvedDealsList.reduce((acc: number, d: any) => acc + (d.amount || 0), 0);
-    const avgDealSize = approvedDeals > 0 ? Math.round(totalRaised / approvedDeals) : 0;
+    const paidDeals = (allDealsForEntrepreneur as any[]).filter(d => isDealPaid(d));
+    const awaitingPaymentCount = (allDealsForEntrepreneur as any[]).filter(d => isDealAwaitingPayment(d)).length;
+    const paidDealsCount = paidDeals.length;
+
+    const totalRaised = paidDeals.reduce((acc: number, d: any) => acc + (d.amount || 0), 0);
+    const avgDealSize = paidDealsCount > 0 ? Math.round(totalRaised / paidDealsCount) : 0;
     const avgEquityGiven = Math.round((equityAvgAgg[0]?.avg || 0) * 10) / 10;
 
     const targetTotal = pitches.reduce((acc: number, p: any) => acc + (p.amountRequired || 0), 0);
@@ -171,18 +172,22 @@ export async function getEntrepreneurStats(entrepreneurId: string): Promise<Entr
         months.push({ start, end, label: monthLabel(start) });
     }
 
-    const dealsTrend: TrendPoint[] = await Promise.all(months.map(async m => {
-        const c = await Deal.countDocuments({ entrepreneur: eId, status: 'approved', createdAt: { $gte: m.start, $lt: m.end } });
+    const dealsTrend: TrendPoint[] = months.map(m => {
+        const c = paidDeals.filter((d: any) => {
+            const t = new Date(d.paidAt || d.createdAt).getTime();
+            return t >= m.start.getTime() && t < m.end.getTime();
+        }).length;
         return { label: m.label, value: c };
-    }));
+    });
 
-    const fundingTrend: TrendPoint[] = await Promise.all(months.map(async m => {
-        const agg = await Deal.aggregate([
-            { $match: { entrepreneur: eId, status: 'approved', createdAt: { $gte: m.start, $lt: m.end } } },
-            { $group: { _id: null, total: { $sum: '$amount' } } },
-        ]);
-        return { label: m.label, value: agg[0]?.total || 0 };
-    }));
+    const fundingTrend: TrendPoint[] = months.map(m => {
+        const total = paidDeals.reduce((acc: number, d: any) => {
+            const t = new Date(d.paidAt || d.createdAt).getTime();
+            if (t >= m.start.getTime() && t < m.end.getTime()) return acc + (d.amount || 0);
+            return acc;
+        }, 0);
+        return { label: m.label, value: total };
+    });
 
     // Pitch view trend approximated via createdAt of pitches (not real per-day views, but new-pitches per month)
     const pitchViewsTrend: TrendPoint[] = await Promise.all(months.map(async m => {
@@ -198,8 +203,8 @@ export async function getEntrepreneurStats(entrepreneurId: string): Promise<Entr
     ].filter(p => p.value > 0);
 
     const dealStatus: ChartPoint[] = [
-        { label: 'Pending', value: pendingDeals, color: STATUS_COLORS.pending },
-        { label: 'Approved', value: approvedDeals, color: STATUS_COLORS.approved },
+        { label: 'Awaiting Payment', value: awaitingPaymentCount, color: STATUS_COLORS.pending },
+        { label: 'Paid', value: paidDealsCount, color: STATUS_COLORS.approved },
         { label: 'Rejected', value: rejectedDeals, color: STATUS_COLORS.rejected },
     ].filter(p => p.value > 0);
 
@@ -259,8 +264,8 @@ export async function getEntrepreneurStats(entrepreneurId: string): Promise<Entr
         },
         deals: {
             total: totalDeals,
-            pending: pendingDeals,
-            approved: approvedDeals,
+            pending: awaitingPaymentCount,
+            approved: paidDealsCount,
             rejected: rejectedDeals,
             totalRaised,
             avgDealSize,

@@ -8,6 +8,7 @@ import Message from '@/models/Message';
 import Blog from '@/models/Blog';
 import Newsletter from '@/models/Newsletter';
 import CommunityTopic from '@/models/CommunityTopic';
+import { getPaidDealQuery } from '@/lib/deal-status';
 
 export interface ChartPoint { label: string; value: number; color: string }
 export interface TrendPoint { label: string; value: number }
@@ -181,16 +182,22 @@ export async function getAdminStats(): Promise<AdminStats> {
         Pitch.countDocuments({ createdAt: { $gte: thisMonthStart } }),
         Pitch.aggregate([{ $group: { _id: null, total: { $sum: '$views' } } }]),
         Deal.countDocuments(),
-        Deal.countDocuments({ status: 'pending' }),
-        Deal.countDocuments({ status: 'approved' }),
+        // Awaiting payment: not paid and not rejected
+        Deal.countDocuments({
+            status: { $ne: 'rejected' },
+            paymentStatus: { $ne: 'paid' },
+            // Exclude legacy already-paid deals (status approved/completed without paymentStatus)
+            $nor: [{ status: { $in: ['approved', 'completed'] } }],
+        }),
+        Deal.countDocuments(getPaidDealQuery()),
         Deal.countDocuments({ status: 'rejected' }),
         Deal.countDocuments({ createdAt: { $gte: thisMonthStart } }),
         Deal.aggregate([
-            { $match: { status: 'approved' } },
+            { $match: getPaidDealQuery() },
             { $group: { _id: null, total: { $sum: '$amount' }, avg: { $avg: '$amount' } } },
         ]),
         Deal.aggregate([
-            { $match: { status: 'approved' } },
+            { $match: getPaidDealQuery() },
             { $group: { _id: null, avg: { $avg: '$equity' } } },
         ]),
         Conversation.countDocuments({ type: 'pitch', dealStatus: 'in_progress' }),
@@ -264,15 +271,30 @@ export async function getAdminStats(): Promise<AdminStats> {
     });
 
     const fundingVolume = await buildMonthlyTrend(async (start, end) => {
+        // Bucket by paidAt when available, falling back to createdAt for legacy deals
         const agg = await Deal.aggregate([
-            { $match: { status: 'approved', createdAt: { $gte: start, $lt: end } } },
+            {
+                $match: {
+                    $or: [
+                        { paymentStatus: 'paid', paidAt: { $gte: start, $lt: end } },
+                        { paymentStatus: 'paid', paidAt: { $exists: false }, createdAt: { $gte: start, $lt: end } },
+                        { status: { $in: ['approved', 'completed'] }, paymentStatus: { $ne: 'paid' }, createdAt: { $gte: start, $lt: end } },
+                    ],
+                },
+            },
             { $group: { _id: null, total: { $sum: '$amount' } } },
         ]);
         return agg[0]?.total || 0;
     });
 
     const dealsTrend = await buildMonthlyTrend(async (start, end) => {
-        return Deal.countDocuments({ status: 'approved', createdAt: { $gte: start, $lt: end } });
+        return Deal.countDocuments({
+            $or: [
+                { paymentStatus: 'paid', paidAt: { $gte: start, $lt: end } },
+                { paymentStatus: 'paid', paidAt: { $exists: false }, createdAt: { $gte: start, $lt: end } },
+                { status: { $in: ['approved', 'completed'] }, paymentStatus: { $ne: 'paid' }, createdAt: { $gte: start, $lt: end } },
+            ],
+        });
     });
 
     const industries: ChartPoint[] = industryAgg.map((r: any, i: number) => ({
@@ -302,8 +324,8 @@ export async function getAdminStats(): Promise<AdminStats> {
     }));
 
     const dealsStatus: ChartPoint[] = [
-        { label: 'Pending', value: pendingDeals, color: STATUS_COLORS.pending },
-        { label: 'Approved', value: approvedDeals, color: STATUS_COLORS.approved },
+        { label: 'Awaiting Payment', value: pendingDeals, color: STATUS_COLORS.pending },
+        { label: 'Paid', value: approvedDeals, color: STATUS_COLORS.approved },
         { label: 'Rejected', value: rejectedDeals, color: STATUS_COLORS.rejected },
     ].filter(s => s.value > 0);
 
