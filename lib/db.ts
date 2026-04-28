@@ -75,6 +75,7 @@ import '../models/Investor';
 import '../models/Message';
 import '../models/Newsletter';
 import '../models/Notification';
+import '../models/Payment';
 import '../models/Pitch';
 import '../models/PitchUpdate';
 import '../models/Settings';
