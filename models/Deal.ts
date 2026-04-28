@@ -30,8 +30,29 @@ const DealSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending',
+        enum: ['pending', 'accepted', 'approved', 'completed', 'rejected'],
+        default: 'accepted',
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['unpaid', 'processing', 'paid', 'failed'],
+        default: 'unpaid',
+    },
+    paymentIntentId: {
+        type: String,
+    },
+    paymentIntentCreatedAt: {
+        type: Date,
+    },
+    paidAt: {
+        type: Date,
+    },
+    lastPaymentError: {
+        type: String,
+    },
+    paymentRecord: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Payment',
     },
     rejectionReason: {
         type: String,

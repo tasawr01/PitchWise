@@ -3,6 +3,7 @@
 import dbConnect from '@/lib/db';
 import Deal from '@/models/Deal';
 import { revalidatePath } from 'next/cache';
+import { getPaidDealQuery } from '@/lib/deal-status';
 
 export async function createDealProposal(data: { pitchId: string, investorId: string, entrepreneurId: string, amount: number, equity: number, terms: string }) {
     try {
@@ -26,7 +27,8 @@ export async function createDealProposal(data: { pitchId: string, investorId: st
             amount: data.amount,
             equity: data.equity,
             terms: data.terms,
-            status: 'pending' // Pending Investor approval
+            status: 'accepted',
+            paymentStatus: 'unpaid'
         });
 
         // Revalidate the entrepreneur deals page if it exists
@@ -42,8 +44,7 @@ export async function getMyInvestors(entrepreneurId: string) {
     try {
         await dbConnect();
 
-        // Fetch approved deals for this entrepreneur
-        const deals = await Deal.find({ entrepreneur: entrepreneurId, status: 'approved' })
+        const deals = await Deal.find(getPaidDealQuery({ entrepreneur: entrepreneurId }))
             .populate('investor', 'fullName profilePhoto')
             .populate('pitch', 'businessName')
             .sort({ createdAt: -1 })

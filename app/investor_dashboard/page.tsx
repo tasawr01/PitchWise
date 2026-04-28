@@ -22,7 +22,7 @@ async function loadDashboard(): Promise<{ stats: InvestorStats; userName: string
         const { payload } = await jwtVerify(token, secret);
         if (payload.role !== 'investor') return null;
         await dbConnect();
-        const investor: any = await Investor.findById(payload.id).select('fullName').lean();
+        const investor = await Investor.findById(payload.id).select('fullName').lean<{ fullName?: string }>();
         const stats = await getInvestorStats(payload.id as string);
         return { stats, userName: investor?.fullName || 'Investor' };
     } catch {
@@ -45,7 +45,7 @@ export default async function InvestorDashboard() {
             <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">Dashboard Overview</h2>
-                    <p className="text-gray-500 mt-2 text-lg">Welcome back, {userName}. Here's your portfolio snapshot.</p>
+                    <p className="text-gray-500 mt-2 text-lg">Welcome back, {userName}. Here&apos;s your portfolio snapshot.</p>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                     <span className="bg-green-50 text-green-700 px-3 py-1.5 rounded-full font-bold">● Live</span>
@@ -62,9 +62,9 @@ export default async function InvestorDashboard() {
                     icon={<DollarIcon />}
                 />
                 <KpiCard
-                    title="Pending Deals"
+                    title="Awaiting Payment"
                     value={stats.deals.pending}
-                    sub="Awaiting your decision"
+                    sub="Approved deals pending payment"
                     color="amber"
                     icon={<ClockIcon />}
                     actionHref="/investor_dashboard/deals"

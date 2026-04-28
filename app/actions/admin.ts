@@ -2,19 +2,17 @@
 
 import dbConnect from '@/lib/db';
 import Deal from '@/models/Deal';
-import Pitch from '@/models/Pitch';
-import Entrepreneur from '@/models/Entrepreneur';
-import Investor from '@/models/Investor';
+import { getPaidDealQuery } from '@/lib/deal-status';
 
 export async function getApprovedDeals() {
     try {
         await dbConnect();
 
-        // Fetch deals where status is approved and populate references
-        const deals = await Deal.find({ status: 'approved' })
+        const deals = await Deal.find(getPaidDealQuery())
             .populate('pitch', 'businessName')
             .populate('entrepreneur', 'fullName profilePhoto')
             .populate('investor', 'fullName profilePhoto')
+            .populate('paymentRecord', 'receiptNumber cardLast4 processedAt status')
             .sort({ createdAt: -1 })
             .lean();
 
@@ -41,6 +39,7 @@ export async function getDealById(dealId: string) {
             .populate('pitch', 'businessName')
             .populate('entrepreneur', 'fullName')
             .populate('investor', 'fullName')
+            .populate('paymentRecord', 'receiptNumber cardLast4 processedAt status')
             .lean();
 
         if (!deal) {

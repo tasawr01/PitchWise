@@ -2,7 +2,6 @@ import { getApprovedDeals } from '@/app/actions/admin';
 import Link from 'next/link';
 
 export default async function AdminFunding() {
-    // Fetch actual approved deals
     const { success, deals, error } = await getApprovedDeals();
 
     if (!success) {
@@ -22,7 +21,7 @@ export default async function AdminFunding() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">Funding & Deals</h2>
-                    <p className="text-gray-500 mt-1">Track recent investment activities active on the platform.</p>
+                    <p className="text-gray-500 mt-1">Track completed dummy payments and the deals they activated on the platform.</p>
                 </div>
                 <div className="bg-[#E8F1F8] text-[#0B2C4A] px-4 py-2 rounded-lg font-semibold text-sm">
                     Total Volume: <span className="font-bold">{formattedVolume}</span>
@@ -39,7 +38,7 @@ export default async function AdminFunding() {
                                 <th scope="col" className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Investor</th>
                                 <th scope="col" className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Amount</th>
                                 <th scope="col" className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Date</th>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Agreement</th>
+                                <th scope="col" className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Receipt</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
@@ -77,13 +76,13 @@ export default async function AdminFunding() {
                                             {dateStr}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {deal.documentUrl ? (
-                                                <Link href={deal.documentUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium hover:underline inline-flex items-center gap-1">
+                                            {deal.paymentRecord?._id ? (
+                                                <Link href={`/api/payments/${deal.paymentRecord._id}/receipt`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium hover:underline inline-flex items-center gap-1">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                    View Agreement
+                                                    {deal.paymentRecord.receiptNumber || 'View Receipt'}
                                                 </Link>
                                             ) : (
-                                                <span className="text-gray-400 italic">Not attached</span>
+                                                <span className="text-gray-400 italic">Not available</span>
                                             )}
                                         </td>
                                     </tr>

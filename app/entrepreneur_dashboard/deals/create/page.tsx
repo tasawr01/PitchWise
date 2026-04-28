@@ -39,7 +39,7 @@ function DealCreationForm() {
             if (result.success && result.dealId) {
                 // Redirect entrepreneur to their deals page when created
                 router.push(`/entrepreneur_dashboard`);
-                alert('Deal Proposal successfully created! Waiting for Investor approval.');
+                alert('Deal successfully created. The investor can now complete the dummy payment.');
             } else {
                 alert('Failed: ' + result.error);
             }
@@ -55,8 +55,8 @@ function DealCreationForm() {
         <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
             <h1 className="text-2xl font-bold text-[#0B2C4A] mb-6">Create Deal Proposal</h1>
             <p className="text-gray-500 mb-8">
-                Fill in the details below to generate a formal deal document.
-                The investor will need to review and approve this document.
+                Fill in the details below to prepare an accepted deal for the investor.
+                Once created, the investor can move directly into the dummy payment flow.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import DocumentCard from '@/components/investor/DocumentCard';
 import { redirect } from 'next/navigation';
+import { isDealPaid } from '@/lib/deal-status';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ export default async function PortfolioPage() {
     if (!user) redirect('/login');
 
     const deals = await getInvestorDeals(user.id as string);
-    const approvedDeals = deals.filter((d: any) => d.status === 'approved');
+    const approvedDeals = deals.filter((d: any) => isDealPaid(d));
 
     // Calculate generic stats
     const totalInvested = approvedDeals.reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
@@ -72,7 +73,7 @@ export default async function PortfolioPage() {
                         </svg>
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No active investments yet</h3>
-                    <p className="text-gray-500">Once your deals are approved, they will appear here.</p>
+                    <p className="text-gray-500">Once your dummy payments are completed, they will appear here.</p>
                 </div>
             )}
         </div>
