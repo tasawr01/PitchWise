@@ -21,7 +21,7 @@ export default async function AdminFunding() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">Funding & Deals</h2>
-                    <p className="text-gray-500 mt-1">Track completed dummy payments and the deals they activated on the platform.</p>
+                    <p className="text-gray-500 mt-1">Track completed payments and the deals they activated on the platform.</p>
                 </div>
                 <div className="bg-[#E8F1F8] text-[#0B2C4A] px-4 py-2 rounded-lg font-semibold text-sm">
                     Total Volume: <span className="font-bold">{formattedVolume}</span>

@@ -33,7 +33,7 @@ export default async function DealsPage() {
         <div className="max-w-7xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-[#0B2C4A] tracking-tight">My Deals</h1>
-                <p className="text-gray-500 mt-2 text-lg">Manage accepted deals, complete dummy payments, and review completed transactions.</p>
+                <p className="text-gray-500 mt-2 text-lg">Manage accepted deals, complete payments, and review completed transactions.</p>
             </div>
 
             <DealsTabView pendingDeals={pendingDeals} pastDeals={pastDeals} />

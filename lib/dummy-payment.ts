@@ -40,7 +40,7 @@ export function validateDummyPaymentInput(input: { cardNumber: string; expiry: s
     if (normalizedCardNumber !== DUMMY_CARD_NUMBER) {
         return {
             valid: false,
-            error: 'Use the demo Visa card 4242 4242 4242 4242 to complete this dummy payment.',
+            error: 'Invalid card number. Please verify your card details and try again.',
         };
     }
 

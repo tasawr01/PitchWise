@@ -72,7 +72,6 @@ export async function POST(req: Request) {
             currency: 'PKR',
             startupName: deal.pitch?.businessName || 'Startup',
             entrepreneurName: deal.entrepreneur?.fullName || 'Entrepreneur',
-            dummyCard: '4242 4242 4242 4242',
         });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message || 'Failed to create payment intent.' }, { status: 500 });

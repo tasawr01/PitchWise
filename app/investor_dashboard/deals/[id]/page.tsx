@@ -56,7 +56,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
                             <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-300">Deal Overview</p>
                             <h1 className="mt-3 text-4xl font-black tracking-tight">{deal.pitch?.businessName}</h1>
                             <p className="mt-2 max-w-2xl text-white/75">
-                                Review the accepted deal, payment progress, and generated receipt for this dummy transaction flow.
+                                Review the accepted deal, payment progress, and generated receipt.
                             </p>
                         </div>
                         <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${badgeStyle}`}>
@@ -129,7 +129,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
                                         <p className="mt-1">Paid on {new Date(deal.paidAt || deal.paymentRecord?.processedAt || deal.updatedAt).toLocaleString()}</p>
                                         <p className="mt-1">
                                             {deal.paymentRecord?.cardLast4
-                                                ? `Dummy Visa ending in ${deal.paymentRecord.cardLast4}`
+                                                ? `Visa ending in ${deal.paymentRecord.cardLast4}`
                                                 : 'This paid deal was created before receipt tracking was added.'}
                                         </p>
                                     </div>
@@ -152,7 +152,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
                             ) : (
                                 <div className="mt-5 space-y-4">
                                     <div className="rounded-2xl bg-yellow-50 p-4 text-sm text-yellow-800">
-                                        The deal has been accepted and is waiting for dummy card payment.
+                                        The deal has been accepted and is waiting for payment.
                                     </div>
                                     <Link
                                         href={`/investor_dashboard/deals/${deal._id}/pay`}

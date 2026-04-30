@@ -178,7 +178,7 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                         <div className="flex items-start gap-3 p-4 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200">
                             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                             <p className="text-sm">
-                                This deal has already been accepted and is waiting for a dummy card payment. Use the demo card on the payment page to complete the flow.
+                                This deal has already been accepted and is waiting for payment. Visit the payment page to complete the transaction.
                             </p>
                         </div>
                     )}
@@ -189,7 +189,7 @@ export default function DealDetailModal({ deal, isReadOnly = false, onClose }: D
                                 <div>
                                     <p className="text-xs font-bold uppercase tracking-wider text-green-700">Payment Receipt</p>
                                     <p className="text-sm text-green-900 mt-1">
-                                        Receipt {deal.paymentRecord?.receiptNumber || 'available'} for dummy payment ending in {deal.paymentRecord?.cardLast4 || '4242'}.
+                                        Receipt {deal.paymentRecord?.receiptNumber || 'available'} for payment ending in {deal.paymentRecord?.cardLast4 || '4242'}.
                                     </p>
                                 </div>
                                 <a

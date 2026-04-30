@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverExternalPackages: ['pdfkit'],
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/pdfkit/js/data/**/*'],
+  },
 };
 
 export default nextConfig;

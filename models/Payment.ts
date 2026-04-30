@@ -57,6 +57,9 @@ const PaymentSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    receiptUrl: {
+        type: String,
+    },
     processedAt: {
         type: Date,
         default: Date.now,

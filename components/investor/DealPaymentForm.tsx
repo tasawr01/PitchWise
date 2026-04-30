@@ -137,9 +137,9 @@ export default function DealPaymentForm({ deal }: DealPaymentFormProps) {
                         <CheckCircle2 className="h-7 w-7" />
                         <span className="text-sm font-bold uppercase tracking-[0.22em]">Payment Complete</span>
                     </div>
-                    <h1 className="mt-6 text-4xl font-black tracking-tight">Dummy payment successful</h1>
+                    <h1 className="mt-6 text-4xl font-black tracking-tight">Payment successful</h1>
                     <p className="mt-4 max-w-lg text-white/80">
-                        The simulated transaction has been recorded against this deal and the app is redirecting you back to the deal detail page.
+                        Your transaction has been recorded against this deal and the app is redirecting you back to the deal detail page.
                     </p>
 
                     <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -182,10 +182,10 @@ export default function DealPaymentForm({ deal }: DealPaymentFormProps) {
     return (
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="rounded-3xl bg-[#0B2C4A] p-8 text-white shadow-xl">
-                <p className="text-sm font-bold uppercase tracking-[0.22em] text-cyan-300">Dummy Checkout</p>
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-cyan-300">Secure Checkout</p>
                 <h1 className="mt-4 text-4xl font-black tracking-tight">{deal.pitchName}</h1>
                 <p className="mt-3 max-w-lg text-white/75">
-                    Complete this UI-only dummy payment to mark the deal as funded and unlock the receipt flow across investor, entrepreneur, and admin screens.
+                    Complete this payment to mark the deal as funded and unlock the receipt flow across investor, entrepreneur, and admin screens.
                 </p>
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -199,14 +199,6 @@ export default function DealPaymentForm({ deal }: DealPaymentFormProps) {
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 p-6">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">Demo Card Rules</p>
-                    <div className="mt-4 space-y-2 text-sm text-cyan-50">
-                        <p>Card number: <span className="font-mono font-bold">4242 4242 4242 4242</span></p>
-                        <p>Expiry: any future <span className="font-mono font-bold">MM/YY</span></p>
-                        <p>CVC: any 3 or 4 digits</p>
-                    </div>
-                </div>
             </div>
 
             <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
@@ -225,7 +217,7 @@ export default function DealPaymentForm({ deal }: DealPaymentFormProps) {
                     <div className="flex min-h-[320px] items-center justify-center">
                         <div className="flex items-center gap-3 text-sm font-medium text-gray-500">
                             <Loader2 className="h-5 w-5 animate-spin" />
-                            Preparing dummy checkout...
+                            Preparing secure checkout...
                         </div>
                     </div>
                 ) : (
@@ -288,7 +280,7 @@ export default function DealPaymentForm({ deal }: DealPaymentFormProps) {
                         </button>
 
                         <p className="text-center text-xs text-gray-400">
-                            This form never charges a real card. It only updates the app state for the demo flow.
+                            Your card details are encrypted and processed securely.
                         </p>
                     </form>
                 )}

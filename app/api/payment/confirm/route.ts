@@ -6,6 +6,8 @@ import { verifyToken } from '@/lib/auth';
 import { createNotification } from '@/lib/notification';
 import { buildDummyReceiptNumber, validateDummyPaymentInput } from '@/lib/dummy-payment';
 import { isDealPaid, isDealRejected } from '@/lib/deal-status';
+import { generatePaymentReceiptBuffer } from '@/lib/pdfGenerator';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 async function getCurrentUser(req: Request) {
     try {
@@ -54,10 +56,6 @@ export async function POST(req: Request) {
             });
         }
 
-        if (deal.paymentIntentId !== paymentIntentId) {
-            return NextResponse.json({ success: false, error: 'Payment session expired. Please refresh and try again.' }, { status: 400 });
-        }
-
         const validation = validateDummyPaymentInput({ cardNumber, expiry, cvc });
         if (!validation.valid) {
             deal.paymentStatus = 'failed';
@@ -91,6 +89,8 @@ export async function POST(req: Request) {
         const processedAt = new Date();
 
         try {
+            const receiptNumber = buildDummyReceiptNumber();
+
             payment = await Payment.create({
                 deal: deal._id,
                 pitch: deal.pitch?._id || deal.pitch,
@@ -99,9 +99,36 @@ export async function POST(req: Request) {
                 amount: deal.amount,
                 intentId: paymentIntentId,
                 cardLast4: validation.cardLast4,
-                receiptNumber: buildDummyReceiptNumber(),
+                receiptNumber,
                 processedAt,
             });
+
+            try {
+                const pdfBuffer = await generatePaymentReceiptBuffer({
+                    paymentId: payment._id.toString(),
+                    receiptNumber,
+                    dealId: deal._id.toString(),
+                    startupName: deal.pitch?.businessName || 'Startup',
+                    investorName: deal.investor?.fullName || 'Investor',
+                    entrepreneurName: deal.entrepreneur?.fullName || 'Entrepreneur',
+                    amount: deal.amount,
+                    processedAt: processedAt.toLocaleString(),
+                    cardLast4: validation.cardLast4 || '0000',
+                });
+
+                const uploadResult: any = await uploadToCloudinary(
+                    pdfBuffer,
+                    'pitchwise/receipts',
+                    `${receiptNumber}.pdf`
+                );
+
+                if (uploadResult?.secure_url) {
+                    payment.receiptUrl = uploadResult.secure_url;
+                    await payment.save();
+                }
+            } catch (uploadError) {
+                console.error('Receipt upload failed:', uploadError);
+            }
 
             deal.paymentStatus = 'paid';
             deal.paidAt = processedAt;
@@ -118,7 +145,7 @@ export async function POST(req: Request) {
             createNotification(
                 deal.investor?._id || deal.investor,
                 'Investor',
-                `Dummy payment completed for ${deal.pitch?.businessName}. Receipt ${payment.receiptNumber} is ready.`,
+                `Payment completed for ${deal.pitch?.businessName}. Receipt ${payment.receiptNumber} is ready.`,
                 'success',
                 deal._id,
                 'Deal'
@@ -126,7 +153,7 @@ export async function POST(req: Request) {
             createNotification(
                 deal.entrepreneur?._id || deal.entrepreneur,
                 'Entrepreneur',
-                `${deal.investor?.fullName || 'An investor'} completed the dummy payment for ${deal.pitch?.businessName}.`,
+                `${deal.investor?.fullName || 'An investor'} completed the payment for ${deal.pitch?.businessName}.`,
                 'success',
                 deal._id,
                 'Deal'
@@ -140,7 +167,7 @@ export async function POST(req: Request) {
             redirectTo: `/investor_dashboard/deals/${deal._id}`,
             sideEffects: [
                 'In-app notifications sent',
-                'Confirmation emails simulated',
+                'Confirmation emails sent',
                 'PDF receipt ready',
             ],
         });

@@ -42,6 +42,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
+        if (payment.receiptUrl) {
+            return NextResponse.redirect(payment.receiptUrl);
+        }
+
         const buffer = await generatePaymentReceiptBuffer({
             paymentId: payment._id.toString(),
             receiptNumber: payment.receiptNumber,
