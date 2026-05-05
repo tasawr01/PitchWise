@@ -7,6 +7,7 @@ import { notFound, redirect } from 'next/navigation';
 import { formatCurrency } from '@/lib/utils';
 import WatchlistButton from '@/components/investor/WatchlistButton';
 import TalkNowButton from '@/components/investor/TalkNowButton';
+import PitchRatingSection from '@/components/rating/PitchRatingSection';
 
 // Helper to get user securely
 async function getUser() {
@@ -265,6 +266,10 @@ export default async function PitchDetailPage({ params }: { params: Promise<{ id
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="mt-10">
+                <PitchRatingSection pitchId={pitch._id?.toString?.() || String(pitch._id)} investorId={user.id as string} />
             </div>
         </div>
     );

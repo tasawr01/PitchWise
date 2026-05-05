@@ -78,6 +78,7 @@ import '../models/Notification';
 import '../models/Payment';
 import '../models/Pitch';
 import '../models/PitchUpdate';
+import '../models/Rating';
 import '../models/Settings';
 
 export default dbConnect;

@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from '@/context/ChatContext';
 import { Send, Paperclip, MoreVertical, FileText, ImageIcon, X, Loader2 } from 'lucide-react';
+import RatingPopup from '@/components/rating/RatingPopup';
+import { submitInvestorRating } from '@/app/actions/rating';
 
 export default function ChatWindow({ userId, userRole, hideHeader = false }: { userId: string, userRole: string, hideHeader?: boolean }) {
     const {
@@ -21,6 +23,12 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
     const [isUploading, setIsUploading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [ratingContext, setRatingContext] = useState<{
+        conversationId: string;
+        investorName: string;
+        closureType: 'discarded';
+    } | null>(null);
 
     useEffect(() => {
         if (activeConversation) {
@@ -375,8 +383,18 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ dealStatus: 'discarded' })
                                         });
-                                        handleNavigationComplete();
-                                        alert("Conversation marked as discarded.");
+                                        const investor = activeConversation.participants.find((p: any) => p.userModel === 'Investor')?.user;
+                                        const investorName = (investor && typeof investor === 'object' && investor.fullName) ? investor.fullName : 'this investor';
+                                        setIsDealPopupOpen(false);
+                                        if (userRole === 'entrepreneur') {
+                                            setRatingContext({
+                                                conversationId: activeConversation._id,
+                                                investorName,
+                                                closureType: 'discarded',
+                                            });
+                                        } else {
+                                            handleNavigationComplete();
+                                        }
                                     } catch (err) {
                                         console.error(err);
                                     }
@@ -400,7 +418,7 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
                                         const investor = activeConversation.participants.find((p: any) => p.userModel === 'Investor')?.user;
                                         const investorId = typeof investor === 'object' ? investor._id : investor;
                                         if (userRole === 'entrepreneur') {
-                                            window.location.href = `/entrepreneur_dashboard/deals/create?pitchId=${pitchId}&investorId=${investorId}&entrepreneurId=${userId}`;
+                                            window.location.href = `/entrepreneur_dashboard/deals/create?pitchId=${pitchId}&investorId=${investorId}&entrepreneurId=${userId}&conversationId=${activeConversation._id}`;
                                         }
                                     } catch (err) {
                                         console.error(err);
@@ -420,6 +438,28 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
                         </button>
                     </div>
                 </div>
+            )}
+
+            {ratingContext && (
+                <RatingPopup
+                    title={`Rate ${ratingContext.investorName}`}
+                    subtitle="Tell us what happened with this investor."
+                    onSubmit={async ({ stars, feedback }) => {
+                        return await submitInvestorRating({
+                            conversationId: ratingContext.conversationId,
+                            closureType: ratingContext.closureType,
+                            stars,
+                            feedback,
+                        });
+                    }}
+                    onClose={() => {
+                        setRatingContext(null);
+                        if (pendingNavigation) {
+                            pendingNavigation();
+                            setPendingNavigation(null);
+                        }
+                    }}
+                />
             )}
         </div>
     );

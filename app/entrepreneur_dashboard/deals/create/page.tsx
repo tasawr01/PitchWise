@@ -3,7 +3,9 @@
 import React, { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createDealProposal } from '@/app/actions/entrepreneur';
+import { submitInvestorRating } from '@/app/actions/rating';
 import { Loader2 } from 'lucide-react';
+import RatingPopup from '@/components/rating/RatingPopup';
 
 function DealCreationForm() {
     const searchParams = useSearchParams();
@@ -11,16 +13,23 @@ function DealCreationForm() {
 
     const pitchId = searchParams.get('pitchId');
     const investorId = searchParams.get('investorId');
-    const entrepreneurId = searchParams.get('entrepreneurId'); // We have this from auth, but pass via param for simplicity similarly
+    const entrepreneurId = searchParams.get('entrepreneurId');
+    const conversationId = searchParams.get('conversationId');
 
     const [amount, setAmount] = useState('');
     const [equity, setEquity] = useState('');
     const [terms, setTerms] = useState('Standard investment agreement terms apply.\n\n1. Valuation: ...\n2. Board Seats: ...\n3. Voting Rights: ...');
     const [isLoading, setIsLoading] = useState(false);
+    const [createdDealId, setCreatedDealId] = useState<string | null>(null);
+    const [showRating, setShowRating] = useState(false);
 
     if (!pitchId || !investorId || !entrepreneurId) {
         return <div className="p-8 text-red-500">Missing required parameters.</div>;
     }
+
+    const finishAndRedirect = () => {
+        router.push(`/entrepreneur_dashboard`);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,9 +46,13 @@ function DealCreationForm() {
             });
 
             if (result.success && result.dealId) {
-                // Redirect entrepreneur to their deals page when created
-                router.push(`/entrepreneur_dashboard`);
-                alert('Deal successfully created. The investor can now complete the payment.');
+                setCreatedDealId(result.dealId);
+                if (conversationId) {
+                    setShowRating(true);
+                } else {
+                    alert('Deal successfully created. The investor can now complete the payment.');
+                    finishAndRedirect();
+                }
             } else {
                 alert('Failed: ' + result.error);
             }
@@ -111,6 +124,26 @@ function DealCreationForm() {
                     </button>
                 </div>
             </form>
+
+            {showRating && conversationId && (
+                <RatingPopup
+                    title="Rate the Investor"
+                    subtitle="Your deal is set. Share how working with this investor went."
+                    onSubmit={async ({ stars, feedback }) => {
+                        return await submitInvestorRating({
+                            conversationId,
+                            dealId: createdDealId || undefined,
+                            closureType: 'completed',
+                            stars,
+                            feedback,
+                        });
+                    }}
+                    onClose={() => {
+                        setShowRating(false);
+                        finishAndRedirect();
+                    }}
+                />
+            )}
         </div>
     );
 }

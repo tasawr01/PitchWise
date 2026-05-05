@@ -60,6 +60,26 @@ const DealSchema = new mongoose.Schema({
     documentUrl: {
         type: String, // Link to the generated/signed document
     },
+    closedBy: {
+        type: String,
+        enum: ['entrepreneur', 'investor'],
+    },
+    closureType: {
+        type: String,
+        enum: ['completed', 'discarded'],
+    },
+    closedAt: {
+        type: Date,
+    },
+    closureNotes: {
+        type: String,
+    },
+    finalAmount: {
+        type: Number,
+    },
+    finalEquity: {
+        type: Number,
+    },
 }, { timestamps: true });
 
 // Prevent Mongoose OverwriteModelError

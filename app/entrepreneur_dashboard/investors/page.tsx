@@ -107,10 +107,19 @@ export default async function MyInvestors() {
                             </div>
 
                             {/* Actions */}
-                            <div className="w-full mt-auto pt-4 border-t border-gray-100">
+                            <div className="w-full mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2">
+                                <Link
+                                    href={`/investors/${investor.investorId}`}
+                                    className="w-full py-2.5 bg-white border-2 border-[#0B2C4A]/15 text-[#0B2C4A] font-semibold rounded-xl hover:bg-[#0B2C4A]/5 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    View Profile
+                                </Link>
                                 <Link
                                     href={`/chat?userId=${investor.investorId}`}
-                                    className="w-full py-3 bg-[#0B2C4A] text-white font-semibold rounded-xl hover:bg-[#09223a] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                                    className="w-full py-2.5 bg-[#0B2C4A] text-white font-semibold rounded-xl hover:bg-[#09223a] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5"
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />

@@ -40,6 +40,23 @@ export async function createDealProposal(data: { pitchId: string, investorId: st
     }
 }
 
+export async function getEntrepreneurDeals(entrepreneurId: string) {
+    try {
+        await dbConnect();
+        const deals = await Deal.find({ entrepreneur: entrepreneurId })
+            .populate('pitch', 'businessName logoUrl')
+            .populate('investor', 'fullName email profilePhoto organizationName')
+            .populate('paymentRecord', 'receiptNumber cardLast4 processedAt status')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        return JSON.parse(JSON.stringify(deals));
+    } catch (error) {
+        console.error('Error fetching entrepreneur deals:', error);
+        return [];
+    }
+}
+
 export async function getMyInvestors(entrepreneurId: string) {
     try {
         await dbConnect();
