@@ -28,6 +28,8 @@ export default function EntrepreneurDealCard({ deal }: EntrepreneurDealCardProps
     const investorId = deal.investor?._id || deal.investor;
     const badge = statusBadge(deal);
 
+    const investorProfileHref = investorId ? `/investors/${String(investorId)}` : null;
+
     return (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
             <div className="p-5">
@@ -44,7 +46,14 @@ export default function EntrepreneurDealCard({ deal }: EntrepreneurDealCardProps
                     <div className="flex-1 min-w-0">
                         <h3 className="font-extrabold text-gray-900 truncate text-base">{deal.pitch?.businessName || 'Untitled Pitch'}</h3>
                         <p className="text-sm text-gray-500 truncate flex items-center gap-1">
-                            <User className="w-3 h-3" /> {investorName}
+                            <User className="w-3 h-3" />
+                            {investorProfileHref ? (
+                                <Link href={investorProfileHref} className="hover:text-[#0B2C4A] hover:underline">
+                                    {investorName}
+                                </Link>
+                            ) : (
+                                <span>{investorName}</span>
+                            )}
                             {investorOrg && <span className="text-gray-400">· {investorOrg}</span>}
                         </p>
                     </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useChat } from '@/context/ChatContext';
 import { useRouter } from 'next/navigation';
+import { ExternalLink } from 'lucide-react';
 
 export default function ChatSidebar({ userId, userRole, targetUserId, fetchUrl = '/api/chat/conversations', basePath = '/chat' }: { userId: string, userRole: string, targetUserId?: string, fetchUrl?: string, basePath?: string }) {
     const { conversations, setConversations, setActiveConversation, activeConversation, setMessages, interceptNavigation } = useChat();
@@ -123,7 +125,12 @@ export default function ChatSidebar({ userId, userRole, targetUserId, fetchUrl =
                     <div className="p-4 text-center text-gray-500">No conversations found.</div>
                 ) : (
                     filteredConversations.map(conversation => {
-                        const otherParticipant = conversation.participants.find((p: any) => p.user._id !== userId)?.user;
+                        const otherParticipantEntry = conversation.participants.find((p: any) => p.user?._id !== userId);
+                        const otherParticipant = otherParticipantEntry?.user;
+                        const otherIsInvestor = otherParticipantEntry?.userModel === 'Investor';
+                        const investorProfileHref = (userRole === 'entrepreneur' && otherIsInvestor && otherParticipant?._id)
+                            ? `/investors/${otherParticipant._id}`
+                            : null;
                         const isSelected = activeConversation?._id === conversation._id;
 
                         return (
@@ -144,7 +151,19 @@ export default function ChatSidebar({ userId, userRole, targetUserId, fetchUrl =
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-baseline">
-                                            <h3 className="text-sm font-semibold truncate text-gray-900">{otherParticipant?.fullName || 'Unknown'}</h3>
+                                            <div className="flex items-center gap-1 min-w-0">
+                                                <h3 className="text-sm font-semibold truncate text-gray-900">{otherParticipant?.fullName || 'Unknown'}</h3>
+                                                {investorProfileHref && (
+                                                    <Link
+                                                        href={investorProfileHref}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        title="View investor profile"
+                                                        className="text-gray-400 hover:text-[#0B2C4A] shrink-0"
+                                                    >
+                                                        <ExternalLink className="w-3.5 h-3.5" />
+                                                    </Link>
+                                                )}
+                                            </div>
                                             <div className="shrink-0 ml-2">
                                                 {/* Date - hidden on hover, delete icon shown instead */}
                                                 <span className="text-xs text-gray-400 group-hover:hidden">

@@ -5,6 +5,8 @@ import Rating from '@/models/Rating';
 import Conversation from '@/models/Conversation';
 import Pitch from '@/models/Pitch';
 import Investor from '@/models/Investor';
+import Deal from '@/models/Deal';
+import { getPaidDealQuery } from '@/lib/deal-status';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { revalidatePath } from 'next/cache';
@@ -222,6 +224,42 @@ export async function hasEntrepreneurRatedConversation(conversationId: string) {
     }
 }
 
+export async function getInvestorPortfolio(investorId: string) {
+    try {
+        await dbConnect();
+        const deals: any[] = await Deal.find(getPaidDealQuery({ investor: investorId }))
+            .populate('pitch', 'businessName logoUrl industry stage')
+            .populate('entrepreneur', 'fullName profilePhoto')
+            .sort({ paidAt: -1, createdAt: -1 })
+            .lean();
+
+        const totalAmount = deals.reduce((sum, d) => sum + (Number(d.finalAmount) || Number(d.amount) || 0), 0);
+        const industries = Array.from(
+            new Set(deals.map((d) => d.pitch?.industry).filter(Boolean))
+        );
+        const uniquePitchIds = new Set(deals.map((d) => String(d.pitch?._id || d.pitch)));
+
+        return {
+            success: true,
+            count: deals.length,
+            uniquePitches: uniquePitchIds.size,
+            totalAmount,
+            industries,
+            deals: serialize(deals),
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            count: 0,
+            uniquePitches: 0,
+            totalAmount: 0,
+            industries: [] as string[],
+            deals: [],
+            error: error.message,
+        };
+    }
+}
+
 export async function getInvestorPublicProfile(investorId: string) {
     try {
         await dbConnect();
@@ -232,6 +270,7 @@ export async function getInvestorPublicProfile(investorId: string) {
         if (!investor) return { success: false, error: 'Investor not found.' };
 
         const summary = await getInvestorRatingSummary(investorId);
+        const portfolio = await getInvestorPortfolio(investorId);
 
         return {
             success: true,
@@ -239,6 +278,13 @@ export async function getInvestorPublicProfile(investorId: string) {
             avg: summary.avg,
             count: summary.count,
             ratings: summary.ratings,
+            portfolio: {
+                count: portfolio.count,
+                uniquePitches: portfolio.uniquePitches,
+                totalAmount: portfolio.totalAmount,
+                industries: portfolio.industries,
+                deals: portfolio.deals,
+            },
         };
     } catch (error: any) {
         return { success: false, error: error.message };

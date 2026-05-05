@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
 import { useChat } from '@/context/ChatContext';
 import { Send, Paperclip, MoreVertical, FileText, ImageIcon, X, Loader2 } from 'lucide-react';
 import RatingPopup from '@/components/rating/RatingPopup';
@@ -246,21 +247,45 @@ export default function ChatWindow({ userId, userRole, hideHeader = false }: { u
             {/* Header */}
             {!hideHeader && (activeConversation.type !== 'support' || userRole === 'admin') && (
                 <div className="px-6 py-4 border-b border-gray-200 bg-white flex justify-between items-center shadow-sm">
-                    <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
-                            {otherParticipant?.profilePhoto ? (
-                                <img src={otherParticipant.profilePhoto} alt={otherParticipant.fullName} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-600 font-bold">
-                                    {otherParticipant?.fullName?.charAt(0)}
+                    {(() => {
+                        const otherParticipantEntry = activeConversation.participants.find((p: any) => p.user?._id !== userId);
+                        const isOtherInvestor = otherParticipantEntry?.userModel === 'Investor';
+                        const investorProfileHref = (userRole === 'entrepreneur' && isOtherInvestor && otherParticipant?._id)
+                            ? `/investors/${otherParticipant._id}`
+                            : null;
+
+                        const identityInner = (
+                            <>
+                                <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
+                                    {otherParticipant?.profilePhoto ? (
+                                        <img src={otherParticipant.profilePhoto} alt={otherParticipant.fullName} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-600 font-bold">
+                                            {otherParticipant?.fullName?.charAt(0)}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-900">{otherParticipant?.fullName}</h2>
-                            <p className="text-sm text-blue-600 font-medium">{activeConversation.pitch?.businessName || activeConversation.pitch?.title || 'Pitch Discussion'}</p>
-                        </div>
-                    </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-900 hover:underline">{otherParticipant?.fullName}</h2>
+                                    <p className="text-sm text-blue-600 font-medium">{activeConversation.pitch?.businessName || activeConversation.pitch?.title || 'Pitch Discussion'}</p>
+                                </div>
+                            </>
+                        );
+
+                        return investorProfileHref ? (
+                            <Link
+                                href={investorProfileHref}
+                                className="flex items-center space-x-4 group"
+                                title="View investor profile"
+                            >
+                                {identityInner}
+                            </Link>
+                        ) : (
+                            <div className="flex items-center space-x-4">
+                                {identityInner}
+                            </div>
+                        );
+                    })()}
                     <div className="flex items-center space-x-4">
                         {userRole === 'entrepreneur' && (
                             <button

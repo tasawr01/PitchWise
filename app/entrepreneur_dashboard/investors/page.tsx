@@ -74,8 +74,8 @@ export default async function MyInvestors() {
                     {aggregatedInvestors.map((investor: any) => (
                         <div key={investor.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center p-8 overflow-hidden group relative">
                             {/* Avatar */}
-                            <div className="w-24 h-24 relative mb-4">
-                                <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100 relative">
+                            <Link href={`/investors/${investor.investorId}`} className="w-24 h-24 relative mb-4 block">
+                                <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100 relative hover:ring-4 hover:ring-[#0B2C4A]/15 transition">
                                     {investor.profileImage ? (
                                         <Image
                                             src={investor.profileImage}
@@ -89,10 +89,15 @@ export default async function MyInvestors() {
                                         </div>
                                     )}
                                 </div>
-                            </div>
+                            </Link>
 
                             {/* Name */}
-                            <h3 className="text-xl font-bold text-[#0B2C4A] mb-1 group-hover:text-blue-800 transition-colors">{investor.name}</h3>
+                            <Link
+                                href={`/investors/${investor.investorId}`}
+                                className="text-xl font-bold text-[#0B2C4A] mb-1 hover:text-blue-800 hover:underline transition-colors"
+                            >
+                                {investor.name}
+                            </Link>
 
                             {/* Pitch Name */}
                             <div className="mb-2 flex flex-col items-center gap-1 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
